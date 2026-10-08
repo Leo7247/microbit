@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Mario Micro:bit Runner - GitHub Pages Game</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font 'Press Start 2P' for Retro Arcade Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Press Start 2P', monospace, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: #0b0f19;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Crisp pixel rendering on Canvas */
+        canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            -ms-interpolation-mode: nearest-neighbor;
+        }
+
+        /* Retro Arcade Button Effects */
+        .btn-retro {
+            transition: all 0.08s ease-out;
+            box-shadow: 0 6px 0 #881337, 0 10px 15px rgba(0,0,0,0.5);
+        }
+        .btn-retro:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #881337, 0 4px 6px rgba(0,0,0,0.5);
+        }
+
+        .btn-green-retro {
+            box-shadow: 0 6px 0 #14532d, 0 10px 15px rgba(0,0,0,0.5);
+        }
+        .btn-green-retro:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #14532d, 0 4px 6px rgba(0,0,0,0.5);
+        }
+
+        .btn-blue-retro {
+            box-shadow: 0 6px 0 #1e3a8a, 0 10px 15px rgba(0,0,0,0.5);
+        }
+        .btn-blue-retro:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #1e3a8a, 0 4px 6px rgba(0,0,0,0.5);
+        }
+
+        .btn-yellow-retro {
+            box-shadow: 0 6px 0 #78350f, 0 10px 15px rgba(0,0,0,0.5);
+        }
+        .btn-yellow-retro:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #78350f, 0 4px 6px rgba(0,0,0,0.5);
+        }
+
+        /* LED Pulsing animation for serial connection */
+        .led-pulse {
+            animation: pulse-glow 1.5s infinite alternate;
+        }
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 4px #22c55e, 0 0 8px #22c55e; }
+            to { box-shadow: 0 0 16px #22c55e, 0 0 28px #22c55e; }
+        }
+
+        /* Floating text animation for coin / score popups */
+        .arcade-border {
+            border-image: linear-gradient(to bottom, #f59e0b, #ef4444) 1;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-2 sm:p-4 bg-slate-950 text-white">
+
+    <!-- TOP HEADER / CONTROL BAR -->
+    <header class="w-full max-w-5xl bg-slate-900 border-4 border-amber-500 rounded-2xl p-3 sm:p-4 mb-3 shadow-2xl flex flex-wrap items-center justify-between gap-3">
+        <!-- Logo / Title -->
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-600 border-2 border-white rounded-xl flex items-center justify-center text-xl sm:text-2xl font-bold text-yellow-300 shadow-lg">
+                M
+            </div>
+            <div>
+                <h1 class="text-xs sm:text-base text-yellow-400 drop-shadow-[0_2px_0_#000]">SUPER MARIO RUNNER</h1>
+                <p class="text-[8px] sm:text-[10px] text-slate-400 mt-1">MICRO:BIT WEB SERIAL EDITION</p>
+            </div>
+        </div>
+
+        <!-- Micro:bit Web Serial Status & Actions -->
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+            <!-- Connection Status Badge -->
+            <div id="serial-status-badge" class="flex items-center gap-2 bg-slate-950 border-2 border-slate-700 px-3 py-2 rounded-xl text-[9px] sm:text-[10px]">
+                <span id="status-led" class="w-3 h-3 rounded-full bg-red-500 inline-block transition-all duration-300"></span>
+                <span id="status-text" class="text-slate-300">DISCONNECTED</span>
+            </div>
+
+            <!-- Connect Button -->
+            <button id="connect-btn" onclick="toggleSerialConnection()" class="btn-retro btn-green-retro bg-green-600 hover:bg-green-500 text-white font-bold px-3 py-2.5 rounded-xl text-[9px] sm:text-[10px] flex items-center gap-1.5 cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                CONNECT MICRO:BIT
+            </button>
+
+            <!-- Guide Modal Button -->
+            <button onclick="openGuideModal()" class="btn-retro btn-blue-retro bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-2.5 rounded-xl text-[9px] sm:text-[10px] flex items-center gap-1 cursor-pointer">
+                <span>?</span> SETUP & CODE
+            </button>
+
+            <!-- Sound Mute Toggle -->
+            <button id="audio-toggle-btn" onclick="toggleAudio()" class="bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 p-2 rounded-xl text-yellow-400 cursor-pointer" title="Toggle Sound">
+                <span id="audio-icon" class="text-xs">🔊</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN ARCADE CABINET CONTAINER -->
+    <main class="w-full max-w-5xl relative flex flex-col items-center">
+        <!-- Outer Retro Machine Frame -->
+        <div class="w-full relative bg-slate-900 border-4 sm:border-8 border-red-600 rounded-2xl shadow-[0_0_50px_rgba(239,68,68,0.25)] overflow-hidden">
+
+            <!-- Stats Header Bar -->
+            <div class="bg-black/90 px-3 sm:px-6 py-2.5 border-b-4 border-yellow-500 flex justify-between items-center text-[9px] sm:text-xs text-yellow-300">
+                <div class="flex gap-3 sm:gap-6">
+                    <span>SCORE: <span id="ui-score" class="text-white">000000</span></span>
+                    <span>COINS: <span id="ui-coins" class="text-yellow-400">🪙 0</span></span>
+                </div>
+                <div class="flex gap-3 sm:gap-6">
+                    <span>BEST: <span id="ui-highscore" class="text-emerald-400">000000</span></span>
+                    <span>SPEED: <span id="ui-speed" class="text-cyan-400">1.0x</span></span>
+                </div>
+            </div>
+
+            <!-- Canvas Display Area -->
+            <div class="relative w-full aspect-[16/9] bg-sky-400">
+                <canvas id="gameCanvas" class="w-full h-full block cursor-pointer" onclick="handleCanvasClick()"></canvas>
+
+                <!-- OVERLAY: START SCREEN -->
+                <div id="start-overlay" class="absolute inset-0 bg-black/80 backdrop-blur-xs flex flex-col items-center justify-center p-4 text-center z-10">
+                    <div class="w-16 h-16 bg-red-600 border-4 border-white rounded-2xl flex items-center justify-center text-3xl font-bold text-yellow-300 mb-3 shadow-xl animate-bounce">
+                        M
+                    </div>
+                    <h2 class="text-lg sm:text-3xl text-yellow-400 mb-2 drop-shadow-[0_4px_0_#991b1b]">SUPER MARIO RUNNER</h2>
+                    <p class="text-[10px] sm:text-xs text-cyan-300 mb-6 tracking-wide">MICRO:BIT A+B CONTROLLER GAME</p>
+                    
+                    <div class="bg-slate-900/90 border-2 border-amber-500 p-3 sm:p-4 rounded-xl max-w-md mb-6 text-[9px] sm:text-[11px] text-slate-300 leading-relaxed text-left space-y-1.5">
+                        <p class="text-yellow-300 font-bold">🎮 GAMEPLAY CONTROLS:</p>
+                        <p>• <span class="text-red-400 font-bold">Micro:bit Press A+B</span> = JUMP!</p>
+                        <p>• <span class="text-yellow-400 font-bold">Micro:bit Press B</span> = CROUCH / FAST DROP</p>
+                        <p>• <span class="text-emerald-400 font-bold">Keyboard</span> = Space / Up Arrow / W (Jump) | Down / S (Crouch)</p>
+                        <p>• <span class="text-cyan-400 font-bold">Touch Screen</span> = Tap Screen or On-Screen Arcade Buttons</p>
+                    </div>
+
+                    <button onclick="startGame()" class="btn-retro bg-red-600 hover:bg-red-500 text-yellow-300 font-bold text-xs sm:text-sm px-8 py-4 rounded-xl border-2 border-white cursor-pointer shadow-2xl">
+                        START GAME (A+B)
+                    </button>
+                </div>
+
+                <!-- OVERLAY: GAME OVER SCREEN -->
+                <div id="gameover-overlay" class="hidden absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-4 text-center z-10">
+                    <h2 class="text-2xl sm:text-4xl text-red-500 mb-2 drop-shadow-[0_4px_0_#000] animate-pulse">GAME OVER</h2>
+                    <p class="text-xs sm:text-sm text-yellow-400 mb-6">MARIO GOT HIT!</p>
+
+                    <div class="bg-slate-900 border-2 border-slate-700 p-4 rounded-xl min-w-[280px] mb-6 text-[10px] sm:text-xs space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">FINAL SCORE:</span>
+                            <span id="final-score" class="text-white font-bold">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">COINS COLLECTED:</span>
+                            <span id="final-coins" class="text-yellow-400 font-bold">0</span>
+                        </div>
+                        <div class="flex justify-between border-t border-slate-800 pt-2">
+                            <span class="text-slate-400">BEST HIGH SCORE:</span>
+                            <span id="final-highscore" class="text-emerald-400 font-bold">0</span>
+                        </div>
+                    </div>
+
+                    <button onclick="startGame()" class="btn-retro bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl border-2 border-white cursor-pointer shadow-xl">
+                        PLAY AGAIN (PRESS A+B)
+                    </button>
+                </div>
+
+                <!-- OVERLAY: PAUSE SCREEN -->
+                <div id="pause-overlay" class="hidden absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-4 z-10">
+                    <h2 class="text-2xl text-yellow-400 mb-4 tracking-widest">PAUSED</h2>
+                    <p class="text-[10px] text-white mb-4">PRESS 'P' OR ESC TO RESUME</p>
+                    <button onclick="togglePause()" class="btn-retro bg-blue-600 hover:bg-blue-500 text-white text-xs px-6 py-3 rounded-xl border border-white">RESUME</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM BAR: TOUCH CONTROLS & MICRO:BIT TELEMETRY LOG -->
+        <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+            <!-- On-Screen Arcade Touch Controls for Mobile/Tablet -->
+            <div class="bg-slate-900 border-2 border-slate-800 rounded-xl p-3 flex flex-col justify-between">
+                <span class="text-[10px] text-yellow-400 font-bold mb-2 block text-center sm:text-left">🕹️ ON-SCREEN ARCADE CONTROLS</span>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="triggerJump('TOUCH_BUTTON_AB')" class="btn-retro bg-red-600 active:bg-red-700 text-white font-bold py-3 px-2 rounded-xl text-[10px] flex items-center justify-center gap-1 cursor-pointer">
+                        🔴 JUMP (A+B)
+                    </button>
+                    <button onclick="triggerCrouch('TOUCH_BUTTON_B')" class="btn-retro btn-yellow-retro bg-amber-600 active:bg-amber-700 text-white font-bold py-3 px-2 rounded-xl text-[10px] flex items-center justify-center gap-1 cursor-pointer">
+                        🟡 CROUCH (B)
+                    </button>
+                </div>
+                <p class="text-[8px] text-slate-400 text-center mt-2">Works on touch devices & desktop</p>
+            </div>
+
+            <!-- Serial Signal & Live Telemetry Monitor -->
+            <div class="md:col-span-2 bg-slate-900 border-2 border-slate-800 rounded-xl p-3 text-[10px]">
+                <div class="flex items-center justify-between mb-2 border-b border-slate-800 pb-1.5">
+                    <span class="text-slate-400 font-bold flex items-center gap-2">
+                        <span id="telemetry-led" class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                        MICRO:BIT SERIAL TELEMETRY LOG
+                    </span>
+                    <span id="last-signal-time" class="text-slate-500 text-[9px]">NO SIGNAL</span>
+                </div>
+                <div id="serial-log" class="bg-black/90 rounded-lg p-2.5 text-emerald-400 font-mono h-20 overflow-y-auto border border-slate-800 space-y-1 text-[9px]">
+                    <div class="text-slate-500">[System] Web Serial API ready. Connect your BBC micro:bit via USB.</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MICRO:BIT & GITHUB PAGES SETUP MODAL -->
+    <div id="guide-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-5">
+        <div class="bg-slate-900 border-4 border-amber-500 rounded-2xl max-w-3xl w-full max-h-[92vh] overflow-y-auto p-4 sm:p-6 text-xs text-slate-200 shadow-2xl space-y-5">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-xs sm:text-sm text-yellow-400 font-bold flex items-center gap-2">
+                    ⚡ MICRO:BIT PROGRAMMING & GITHUB PAGES GUIDE
+                </h3>
+                <button onclick="closeGuideModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="flex border-b border-slate-800 gap-2 text-[10px]">
+                <button id="tab-btn-makecode" onclick="switchModalTab('makecode')" class="px-3 py-2 bg-amber-500 text-slate-950 font-bold rounded-t-lg">1. MakeCode Blocks / JS</button>
+                <button id="tab-btn-python" onclick="switchModalTab('python')" class="px-3 py-2 bg-slate-800 text-slate-300 font-bold rounded-t-lg">2. MicroPython</button>
+                <button id="tab-btn-github" onclick="switchModalTab('github')" class="px-3 py-2 bg-slate-800 text-slate-300 font-bold rounded-t-lg">3. GitHub Pages Setup</button>
+            </div>
+
+            <!-- Tab 1: MakeCode -->
+            <div id="tab-content-makecode" class="space-y-3 text-[10px] sm:text-xs">
+                <p class="text-slate-300">Follow these easy steps to program your BBC micro:bit in MakeCode:</p>
+                <ol class="list-decimal list-inside space-y-1.5 text-slate-300 leading-relaxed bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                    <li>Open <a href="https://makecode.microbit.org" target="_blank" class="text-cyan-400 underline font-bold">makecode.microbit.org</a> in your browser.</li>
+                    <li>Add an <span class="text-pink-400 font-bold">on button A+B pressed</span> block.</li>
+                    <li>Inside it, add a <span class="text-blue-400 font-bold">serial write line "A+B"</span> block from the <span class="text-blue-400 font-bold">Serial</span> category.</li>
+                    <li>Connect micro:bit via USB and click **Download** to flash your micro:bit.</li>
+                </ol>
+
+                <div class="bg-black/90 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <div class="flex justify-between items-center text-[10px]">
+                        <span class="text-yellow-400 font-bold">MakeCode JavaScript Code Snippet:</span>
+                        <button onclick="copyToClipboard('makecode-js-code', 'makecode-copy-btn')" id="makecode-copy-btn" class="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-[9px] text-white">📋 COPY CODE</button>
+                    </div>
+                    <pre id="makecode-js-code" class="text-emerald-400 font-mono text-[9px] sm:text-[10px] overflow-x-auto p-2 bg-slate-950 rounded">
+input.onButtonPressed(Button.AB, function () {
+    serial.writeLine("A+B")
+    basic.showIcon(IconNames.Happy)
+})
+input.onButtonPressed(Button.A, function () {
+    serial.writeLine("A")
+})
+input.onButtonPressed(Button.B, function () {
+    serial.writeLine("B")
+})</pre>
+                </div>
+            </div>
+
+            <!-- Tab 2: MicroPython -->
+            <div id="tab-content-python" class="hidden space-y-3 text-[10px] sm:text-xs">
+                <p class="text-slate-300">If you prefer MicroPython on micro:bit, use this code:</p>
+                <div class="bg-black/90 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <div class="flex justify-between items-center text-[10px]">
+                        <span class="text-yellow-400 font-bold">MicroPython Code:</span>
+                        <button onclick="copyToClipboard('python-code', 'python-copy-btn')" id="python-copy-btn" class="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-[9px] text-white">📋 COPY PYTHON</button>
+                    </div>
+                    <pre id="python-code" class="text-emerald-400 font-mono text-[9px] sm:text-[10px] overflow-x-auto p-2 bg-slate-950 rounded">
+from microbit import *
+
+# Initialize USB serial at 115200 baud
+uart.init(baudrate=115200)
+
+while True:
+    if button_a.is_pressed() and button_b.is_pressed():
+        print("A+B")
+        display.show(Image.ARROW_N)
+        sleep(180)
+        display.clear()
+    elif button_a.is_pressed():
+        print("A")
+        sleep(120)
+    elif button_b.is_pressed():
+        print("B")
+        sleep(120)
+    sleep(20)</pre>
+                </div>
+            </div>
+
+            <!-- Tab 3: GitHub Pages Setup -->
+            <div id="tab-content-github" class="hidden space-y-3 text-[10px] sm:text-xs">
+                <p class="text-slate-300 font-bold text-yellow-400">🚀 HOW TO HOST THIS GAME ON GITHUB PAGES FOR FREE:</p>
+                <ol class="list-decimal list-inside space-y-2 text-slate-300 leading-relaxed bg-slate-800/80 p-3.5 rounded-xl border border-slate-700">
+                    <li>Create a new repository on <a href="https://github.com" target="_blank" class="text-cyan-400 underline">GitHub.com</a> (e.g. <code class="text-yellow-300">mario-microbit-game</code>).</li>
+                    <li>Upload this <code class="text-yellow-300">index.html</code> file to the root of your repository.</li>
+                    <li>In your GitHub Repository, click on **Settings** ➔ **Pages** (on the left menu).</li>
+                    <li>Under **Build and deployment**, set Source to **Deploy from a branch**.</li>
+                    <li>Select **Branch: main** (or <code class="text-slate-200">master</code>) and folder <code class="text-slate-200">/(root)</code>, then click **Save**.</li>
+                    <li>Wait 1-2 minutes! GitHub will give you a live HTTPS link (e.g. <code class="text-emerald-400">https://yourusername.github.io/mario-microbit-game</code>). Web Serial API requires HTTPS or localhost, which GitHub Pages provides automatically!</li>
+                </ol>
+            </div>
+
+            <div class="mt-6 text-right pt-2 border-t border-slate-800">
+                <button onclick="closeGuideModal()" class="btn-retro bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-2.5 rounded-xl text-xs">
+                    GOT IT! LET'S PLAY
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           1. RETRO SYNTHESIZED AUDIO ENGINE (Web Audio API)
+           ========================================================================== */
+        let audioCtx = null;
+        let soundMuted = false;
+        let bgmInterval = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleAudio() {
+            soundMuted = !soundMuted;
+            document.getElementById('audio-icon').textContent = soundMuted ? '🔇' : '🔊';
+            if (soundMuted && bgmInterval) {
+                clearInterval(bgmInterval);
+                bgmInterval = null;
+            } else if (!soundMuted && gameState === 'PLAYING') {
+                startBGM();
+            }
+        }
+
+        function playSound(type) {
+            if (soundMuted) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'jump') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(650, now + 0.16);
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.16);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.16);
+            } 
+            else if (type === 'stomp') {
+                // Enemy stomp sound
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(320, now);
+                osc.frequency.exponentialRampToValueAtTime(80, now + 0.12);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            }
+            else if (type === 'coin') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(987.77, now); // B5
+                osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } 
+            else if (type === 'bump') {
+                // Question Block Bump
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            }
+            else if (type === 'hit') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(140, now);
+                osc.frequency.linearRampToValueAtTime(30, now + 0.25);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } 
+            else if (type === 'gameover') {
+                const notes = [380, 320, 260, 200, 160, 120];
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.11);
+                    gain.gain.setValueAtTime(0.2, now + idx * 0.11);
+                    gain.gain.linearRampToValueAtTime(0.01, now + (idx + 1) * 0.11);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.11);
+                    osc.stop(now + (idx + 1) * 0.11);
+                });
+            }
+        }
+
+        function startBGM() {
+            if (bgmInterval) clearInterval(bgmInterval);
+            if (soundMuted) return;
+
+            // Mario Main Theme Synth Loop
+            const bgmNotes = [261.63, 261.63, 0, 261.63, 0, 207.65, 261.63, 0, 329.63, 0, 0, 0, 164.81, 0, 0, 0];
+            let noteIdx = 0;
+
+            bgmInterval = setInterval(() => {
+                if (gameState !== 'PLAYING' || soundMuted || !audioCtx) return;
+                const freq = bgmNotes[noteIdx];
+                if (freq > 0) {
+                    const now = audioCtx.currentTime;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.linearRampToValueAtTime(0.001, now + 0.12);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+                }
+                noteIdx = (noteIdx + 1) % bgmNotes.length;
+            }, 145);
+        }
+
+        function stopBGM() {
+            if (bgmInterval) {
+                clearInterval(bgmInterval);
+                bgmInterval = null;
+            }
+        }
+
+        /* ==========================================================================
+           2. MICRO:BIT WEB SERIAL API CONTROLLER
+           ========================================================================== */
+        let serialPort = null;
+        let serialReader = null;
+        let isConnected = false;
+
+        async function toggleSerialConnection() {
+            initAudio();
+            if (!("serial" in navigator)) {
+                logSerialMessage("Web Serial API is not supported in this browser.", "error");
+                document.getElementById('status-text').textContent = "NOT SUPPORTED";
+                return;
+            }
+
+            if (isConnected) {
+                await disconnectSerial();
+            } else {
+                await connectSerial();
+            }
+        }
+
+        async function connectSerial() {
+            try {
+                serialPort = await navigator.serial.requestPort();
+                // micro:bit default baud rate is 115200
+                await serialPort.open({ baudRate: 115200 });
+
+                isConnected = true;
+                updateSerialUI(true);
+                logSerialMessage("Connected to micro:bit at 115200 baud!");
+
+                readSerialLoop();
+            } catch (err) {
+                console.error("Serial connection error:", err);
+                logSerialMessage("Connection failed: " + err.message, "error");
+                updateSerialUI(false);
+            }
+        }
+
+        async function disconnectSerial() {
+            try {
+                if (serialReader) {
+                    await serialReader.cancel();
+                    serialReader = null;
+                }
+                if (serialPort) {
+                    await serialPort.close();
+                    serialPort = null;
+                }
+            } catch (e) {
+                console.error("Disconnect error:", e);
+            } finally {
+                isConnected = false;
+                updateSerialUI(false);
+                logSerialMessage("Disconnected from micro:bit.");
+            }
+        }
+
+        async function readSerialLoop() {
+            const textDecoder = new TextDecoderStream();
+            const readableStreamClosed = serialPort.readable.pipeTo(textDecoder.writable);
+            serialReader = textDecoder.readable.getReader();
+
+            let buffer = "";
+
+            try {
+                while (true) {
+                    const { value, done } = await serialReader.read();
+                    if (done) break;
+
+                    buffer += value;
+                    let lines = buffer.split("\n");
+                    buffer = lines.pop(); // Hold remaining line buffer
+
+                    for (let line of lines) {
+                        line = line.trim().toUpperCase();
+                        if (line.length > 0) {
+                            processSerialSignal(line);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Serial stream read error:", error);
+            } finally {
+                serialReader.releaseLock();
+            }
+        }
+
+        function processSerialSignal(rawSignal) {
+            logSerialMessage("RX DATA: [" + rawSignal + "]");
+
+            // LED pulse animation
+            const telemetryLed = document.getElementById('telemetry-led');
+            telemetryLed.className = "w-2.5 h-2.5 rounded-full bg-yellow-400 led-pulse";
+            setTimeout(() => {
+                telemetryLed.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+            }, 180);
+
+            // Recognize micro:bit commands
+            if (rawSignal.includes("A+B") || rawSignal.includes("AB") || rawSignal.includes("JUMP") || rawSignal === "1" || rawSignal === "A") {
+                triggerJump("MICRO:BIT [" + rawSignal + "]");
+            } else if (rawSignal.includes("B") || rawSignal.includes("CROUCH")) {
+                triggerCrouch("MICRO:BIT [" + rawSignal + "]");
+            }
+        }
+
+        function updateSerialUI(connected) {
+            const led = document.getElementById('status-led');
+            const text = document.getElementById('status-text');
+            const btn = document.getElementById('connect-btn');
+
+            if (connected) {
+                led.className = "w-3 h-3 rounded-full bg-emerald-400 led-pulse inline-block";
+                text.textContent = "CONNECTED (115200)";
+                text.className = "text-emerald-400 font-bold";
+                btn.innerHTML = `DISCONNECT`;
+                btn.className = "btn-retro bg-red-600 hover:bg-red-500 text-white font-bold px-3 py-2.5 rounded-xl text-[9px] sm:text-[10px] flex items-center gap-1.5 cursor-pointer";
+            } else {
+                led.className = "w-3 h-3 rounded-full bg-red-500 inline-block";
+                text.textContent = "DISCONNECTED";
+                text.className = "text-slate-300";
+                btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> CONNECT MICRO:BIT`;
+                btn.className = "btn-retro btn-green-retro bg-green-600 hover:bg-green-500 text-white font-bold px-3 py-2.5 rounded-xl text-[9px] sm:text-[10px] flex items-center gap-1.5 cursor-pointer";
+            }
+        }
+
+        function logSerialMessage(msg, type = "normal") {
+            const logBox = document.getElementById('serial-log');
+            const timeStr = new Date().toLocaleTimeString().split(' ')[0];
+            const div = document.createElement('div');
+
+            if (type === "error") {
+                div.className = "text-red-400 font-mono";
+            } else if (msg.includes("A+B") || msg.includes("JUMP")) {
+                div.className = "text-yellow-300 font-bold font-mono";
+            } else {
+                div.className = "text-emerald-400 font-mono";
+            }
+
+            div.textContent = `[${timeStr}] ${msg}`;
+            logBox.appendChild(div);
+            logBox.scrollTop = logBox.scrollHeight;
+
+            document.getElementById('last-signal-time').textContent = timeStr;
+        }
+
+        /* ==========================================================================
+           3. GAME ENGINE & CANVAS GRAPHICS ENGINE
+           ========================================================================== */
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const CANVAS_WIDTH = 800;
+        const CANVAS_HEIGHT = 450;
+        canvas.width = CANVAS_WIDTH;
+        canvas.height = CANVAS_HEIGHT;
+
+        const GROUND_Y = 370;
+        const GRAVITY = 0.65;
+
+        let gameState = 'START'; // START, PLAYING, PAUSED, GAMEOVER
+        let score = 0;
+        let coins = 0;
+        let highscore = parseInt(localStorage.getItem('mario_microbit_highscore') || '0');
+        let gameSpeed = 5.0;
+        let distance = 0;
+        let animFrameId = null;
+
+        document.getElementById('ui-highscore').textContent = String(highscore).padStart(6, '0');
+
+        // Mario Character Object
+        const mario = {
+            x: 100,
+            y: GROUND_Y - 50,
+            width: 36,
+            height: 50,
+            normalHeight: 50,
+            crouchHeight: 30,
+            vy: 0,
+            isJumping: false,
+            isCrouching: false,
+            runFrame: 0,
+            animTimer: 0,
+
+            jump() {
+                if (!this.isJumping) {
+                    this.vy = -14.5;
+                    this.isJumping = true;
+                    this.isCrouching = false;
+                    playSound('jump');
+                    createDustParticles(this.x + this.width / 2, GROUND_Y);
+                }
+            },
+
+            stompBounce() {
+                this.vy = -9.5; // Bounce Mario up on enemy stomp
+                this.isJumping = true;
+                playSound('stomp');
+            },
+
+            crouch() {
+                if (!this.isJumping) {
+                    this.isCrouching = true;
+                } else {
+                    // Fast drop if in mid-air
+                    this.vy += 6.0;
+                }
+            },
+
+            uncrouch() {
+                this.isCrouching = false;
+            },
+
+            update() {
+                // Adjust height for crouching
+                if (this.isCrouching && !this.isJumping) {
+                    this.height = this.crouchHeight;
+                } else {
+                    this.height = this.normalHeight;
+                }
+
+                // Gravity & Movement
+                this.vy += GRAVITY;
+                this.y += this.vy;
+
+                // Ground Collision
+                if (this.y >= GROUND_Y - this.height) {
+                    this.y = GROUND_Y - this.height;
+                    this.vy = 0;
+                    this.isJumping = false;
+                }
+
+                // Animation Frame Cycle
+                this.animTimer++;
+                if (this.animTimer % 5 === 0) {
+                    this.runFrame = (this.runFrame + 1) % 3;
+                }
+            },
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                const redCap = '#E52521';
+                const blueOveralls = '#0022F2';
+                const skinTone = '#FCC082';
+                const brownShoes = '#6B3E08';
+                const yellowButtons = '#FCE021';
+
+                if (this.isCrouching && !this.isJumping) {
+                    // --- CROUCHING MARIO POSE ---
+                    ctx.fillStyle = redCap;
+                    ctx.fillRect(4, 0, 28, 8); // Low Cap
+                    ctx.fillStyle = skinTone;
+                    ctx.fillRect(6, 8, 22, 8); // Face
+                    ctx.fillStyle = blueOveralls;
+                    ctx.fillRect(4, 16, 26, 10); // Compressed Body
+                    ctx.fillStyle = brownShoes;
+                    ctx.fillRect(2, 22, 30, 8); // Shoes flat
+                } 
+                else if (this.isJumping) {
+                    // --- JUMPING MARIO POSE ---
+                    ctx.fillStyle = redCap;
+                    ctx.fillRect(6, 0, 24, 10);
+                    ctx.fillRect(10, -4, 16, 6);
+
+                    ctx.fillStyle = skinTone;
+                    ctx.fillRect(8, 10, 20, 12);
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(22, 12, 4, 6);
+                    ctx.fillRect(24, 16, 8, 6);
+
+                    ctx.fillStyle = blueOveralls;
+                    ctx.fillRect(6, 22, 22, 18);
+                    ctx.fillStyle = redCap;
+                    ctx.fillRect(24, 14, 10, 8); // Arm high
+
+                    ctx.fillStyle = yellowButtons;
+                    ctx.fillRect(20, 26, 4, 4);
+
+                    ctx.fillStyle = brownShoes;
+                    ctx.fillRect(2, 40, 14, 10);
+                    ctx.fillRect(20, 36, 14, 10);
+                } 
+                else {
+                    // --- RUNNING MARIO POSE (3 Frames) ---
+                    ctx.fillStyle = redCap;
+                    ctx.fillRect(6, 2, 24, 10);
+                    ctx.fillRect(12, 0, 16, 4);
+
+                    ctx.fillStyle = skinTone;
+                    ctx.fillRect(8, 12, 20, 10);
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(22, 13, 4, 5);
+                    ctx.fillStyle = skinTone;
+                    ctx.fillRect(24, 16, 8, 6);
+
+                    ctx.fillStyle = brownShoes;
+                    ctx.fillRect(18, 20, 12, 4);
+
+                    ctx.fillStyle = redCap;
+                    ctx.fillRect(6, 22, 20, 8);
+                    ctx.fillStyle = blueOveralls;
+                    ctx.fillRect(8, 28, 18, 12);
+
+                    ctx.fillStyle = yellowButtons;
+                    ctx.fillRect(20, 30, 4, 4);
+
+                    ctx.fillStyle = brownShoes;
+                    if (this.runFrame === 0) {
+                        ctx.fillRect(4, 40, 12, 10);
+                        ctx.fillRect(18, 40, 12, 10);
+                    } else if (this.runFrame === 1) {
+                        ctx.fillRect(0, 38, 14, 12);
+                        ctx.fillRect(22, 42, 12, 8);
+                    } else {
+                        ctx.fillRect(22, 38, 14, 12);
+                        ctx.fillRect(2, 42, 12, 8);
+                    }
+                }
+
+                ctx.restore();
+            }
+        };
+
+        let obstacles = [];
+        let coinsList = [];
+        let questionBlocks = [];
+        let particles = [];
+        let scorePopups = [];
+        let clouds = [];
+        let hills = [];
+
+        let obstacleSpawnTimer = 0;
+        let coinSpawnTimer = 0;
+
+        function initParallax() {
+            clouds = [];
+            hills = [];
+            for (let i = 0; i < 5; i++) {
+                clouds.push({
+                    x: Math.random() * CANVAS_WIDTH,
+                    y: 25 + Math.random() * 90,
+                    size: 28 + Math.random() * 28,
+                    speed: 0.4 + Math.random() * 0.4
+                });
+            }
+            for (let i = 0; i < 3; i++) {
+                hills.push({
+                    x: i * 320,
+                    width: 180 + Math.random() * 120,
+                    height: 55 + Math.random() * 35
+                });
+            }
+        }
+
+        function triggerJump(source = "KEYBOARD") {
+            initAudio();
+            if (gameState === 'START' || gameState === 'GAMEOVER') {
+                startGame();
+            } else if (gameState === 'PLAYING') {
+                mario.jump();
+            }
+            logSerialMessage("JUMP TRIGGERED VIA " + source);
+        }
+
+        function triggerCrouch(source = "KEYBOARD") {
+            initAudio();
+            if (gameState === 'PLAYING') {
+                mario.crouch();
+            }
+            logSerialMessage("CROUCH TRIGGERED VIA " + source);
+        }
+
+        function spawnObstacle() {
+            const rand = Math.random();
+
+            if (rand < 0.45) {
+                // GOOMBA (Defeated by stomp!)
+                obstacles.push({
+                    type: 'goomba',
+                    x: CANVAS_WIDTH + 20,
+                    y: GROUND_Y - 34,
+                    width: 36,
+                    height: 34,
+                    squished: false,
+                    squishTimer: 0
+                });
+            } else if (rand < 0.75) {
+                // GREEN MARIO PIPE
+                const pipeHeight = 45 + Math.floor(Math.random() * 30);
+                obstacles.push({
+                    type: 'pipe',
+                    x: CANVAS_WIDTH + 20,
+                    y: GROUND_Y - pipeHeight,
+                    width: 44,
+                    height: pipeHeight
+                });
+            } else {
+                // KOOPA TROOPA
+                obstacles.push({
+                    type: 'koopa',
+                    x: CANVAS_WIDTH + 20,
+                    y: GROUND_Y - 42,
+                    width: 34,
+                    height: 42,
+                    isShell: false
+                });
+            }
+        }
+
+        function spawnCollectibles() {
+            if (Math.random() < 0.55) {
+                // Flying Coins Line
+                const startY = GROUND_Y - 90 - Math.random() * 50;
+                for (let i = 0; i < 3; i++) {
+                    coinsList.push({
+                        x: CANVAS_WIDTH + (i * 32),
+                        y: startY,
+                        width: 20,
+                        height: 24,
+                        animTimer: i * 2
+                    });
+                }
+            } else {
+                // Bumpable Question (?) Block
+                questionBlocks.push({
+                    x: CANVAS_WIDTH + 20,
+                    y: GROUND_Y - 115,
+                    width: 34,
+                    height: 34,
+                    hit: false,
+                    bounceY: 0
+                });
+            }
+        }
+
+        function createDustParticles(x, y) {
+            for (let i = 0; i < 6; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: -Math.random() * 3,
+                    size: 3 + Math.random() * 3,
+                    life: 1.0,
+                    color: '#e2e8f0'
+                });
+            }
+        }
+
+        function createSparkles(x, y) {
+            for (let i = 0; i < 8; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    size: 4,
+                    life: 1.0,
+                    color: '#facc15'
+                });
+            }
+        }
+
+        function addScorePopup(text, x, y, color = "#facc15") {
+            scorePopups.push({
+                text: text,
+                x: x,
+                y: y,
+                vy: -1.5,
+                life: 1.0,
+                color: color
+            });
+        }
+
+        function drawBackground() {
+            // Sky Gradient
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
+            skyGrad.addColorStop(0, '#5c94fc');
+            skyGrad.addColorStop(0.8, '#80b0ff');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // Scrolling Clouds
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+            clouds.forEach(c => {
+                c.x -= c.speed;
+                if (c.x + c.size * 2 < 0) c.x = CANVAS_WIDTH + 50;
+
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
+                ctx.arc(c.x + c.size * 0.7, c.y - c.size * 0.3, c.size * 0.8, 0, Math.PI * 2);
+                ctx.arc(c.x + c.size * 1.4, c.y, c.size * 0.7, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Scrolling Hills
+            ctx.fillStyle = '#00a800';
+            hills.forEach(h => {
+                h.x -= gameSpeed * 0.22;
+                if (h.x + h.width < 0) h.x = CANVAS_WIDTH + Math.random() * 100;
+
+                ctx.beginPath();
+                ctx.ellipse(h.x + h.width / 2, GROUND_Y, h.width / 2, h.height, 0, Math.PI, 0);
+                ctx.fill();
+                ctx.strokeStyle = '#006800';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            });
+
+            // Ground Tile Surface
+            ctx.fillStyle = '#C84C0C';
+            ctx.fillRect(0, GROUND_Y, CANVAS_WIDTH, CANVAS_HEIGHT - GROUND_Y);
+
+            // Grass Edge
+            ctx.fillStyle = '#00A800';
+            ctx.fillRect(0, GROUND_Y, CANVAS_WIDTH, 8);
+            ctx.fillStyle = '#FC9838';
+            ctx.fillRect(0, GROUND_Y + 8, CANVAS_WIDTH, 4);
+
+            // Brick Grid Pattern
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            const brickW = 32;
+            const offsetX = (distance * gameSpeed) % brickW;
+
+            for (let x = -offsetX; x < CANVAS_WIDTH + brickW; x += brickW) {
+                ctx.beginPath();
+                ctx.moveTo(x, GROUND_Y + 12);
+                ctx.lineTo(x, CANVAS_HEIGHT);
+                ctx.stroke();
+            }
+        }
+
+        function updateGame() {
+            if (gameState !== 'PLAYING') return;
+
+            distance += 0.1;
+            gameSpeed = 5.0 + Math.min(6.5, distance * 0.005);
+            score = Math.floor(distance * 10) + (coins * 100);
+
+            document.getElementById('ui-score').textContent = String(score).padStart(6, '0');
+            document.getElementById('ui-coins').textContent = `🪙 ${coins}`;
+            document.getElementById('ui-speed').textContent = `${(gameSpeed / 5.0).toFixed(1)}x`;
+
+            mario.update();
+
+            // Spawn Obstacles Logic
+            obstacleSpawnTimer++;
+            if (obstacleSpawnTimer > 105 - Math.min(45, gameSpeed * 4.5)) {
+                spawnObstacle();
+                obstacleSpawnTimer = 0;
+            }
+
+            // Spawn Coins Logic
+            coinSpawnTimer++;
+            if (coinSpawnTimer > 150) {
+                spawnCollectibles();
+                coinSpawnTimer = 0;
+            }
+
+            // --- OBSTACLES & ENEMY COLLISION LOGIC ---
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obs = obstacles[i];
+                obs.x -= gameSpeed;
+
+                if (obs.type === 'goomba') {
+                    if (obs.squished) {
+                        // Squished Goomba Frame
+                        ctx.fillStyle = '#9A3A00';
+                        ctx.fillRect(obs.x, obs.y + 20, obs.width, 14);
+                        obs.squishTimer++;
+                        if (obs.squishTimer > 15) {
+                            obstacles.splice(i, 1);
+                        }
+                        continue;
+                    }
+
+                    // Active Goomba Body
+                    ctx.fillStyle = '#9A3A00';
+                    ctx.fillRect(obs.x + 4, obs.y + 4, obs.width - 8, obs.height - 8);
+                    ctx.fillStyle = '#FCC082';
+                    ctx.fillRect(obs.x + 8, obs.y, obs.width - 16, 8);
+                    ctx.fillStyle = '#FFF';
+                    ctx.fillRect(obs.x + 6, obs.y + 12, 8, 10);
+                    ctx.fillRect(obs.x + 22, obs.y + 12, 8, 10);
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(obs.x + 10, obs.y + 14, 4, 6);
+                    ctx.fillRect(obs.x + 22, obs.y + 14, 4, 6);
+
+                    // Check Stomp vs Hit Collision
+                    if (checkCollision(mario, obs)) {
+                        // If Mario is falling onto Goomba's top
+                        if (mario.vy > 0 && (mario.y + mario.height - mario.vy) <= obs.y + 12) {
+                            obs.squished = true;
+                            mario.stompBounce();
+                            score += 200;
+                            addScorePopup("+200 STOMP!", obs.x, obs.y, "#22c55e");
+                        } else {
+                            gameOver();
+                            return;
+                        }
+                    }
+                } 
+                else if (obs.type === 'pipe') {
+                    // Pipe Graphics
+                    ctx.fillStyle = '#00A800';
+                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+                    ctx.fillRect(obs.x - 4, obs.y, obs.width + 8, 16);
+                    ctx.fillStyle = '#80D010';
+                    ctx.fillRect(obs.x + 4, obs.y, 6, obs.height);
+                    ctx.fillStyle = '#005000';
+                    ctx.fillRect(obs.x + obs.width - 8, obs.y, 8, obs.height);
+                    ctx.strokeStyle = '#000';
+                    ctx.strokeRect(obs.x - 4, obs.y, obs.width + 8, 16);
+
+                    if (checkCollision(mario, obs)) {
+                        gameOver();
+                        return;
+                    }
+                } 
+                else if (obs.type === 'koopa') {
+                    // Koopa Troopa
+                    ctx.fillStyle = '#00A800';
+                    ctx.beginPath();
+                    ctx.arc(obs.x + obs.width / 2, obs.y + 16, 14, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#FCC082';
+                    ctx.fillRect(obs.x + 12, obs.y + 20, 16, 18);
+
+                    if (checkCollision(mario, obs)) {
+                        if (mario.vy > 0 && (mario.y + mario.height - mario.vy) <= obs.y + 14) {
+                            mario.stompBounce();
+                            score += 300;
+                            addScorePopup("+300 KOOPA!", obs.x, obs.y, "#38bdf8");
+                            obstacles.splice(i, 1);
+                            continue;
+                        } else {
+                            gameOver();
+                            return;
+                        }
+                    }
+                }
+
+                if (obs.x + obs.width < -50) {
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            // --- COIN COLLECTION ---
+            for (let i = coinsList.length - 1; i >= 0; i--) {
+                const coin = coinsList[i];
+                coin.x -= gameSpeed;
+
+                coin.animTimer = (coin.animTimer || 0) + 0.15;
+                const scaleX = Math.abs(Math.cos(coin.animTimer));
+
+                ctx.save();
+                ctx.translate(coin.x + coin.width / 2, coin.y + coin.height / 2);
+                ctx.scale(scaleX, 1);
+                ctx.fillStyle = '#FCE021';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, coin.width / 2, coin.height / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#C88000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+
+                if (checkCollision(mario, coin)) {
+                    coins++;
+                    playSound('coin');
+                    createSparkles(coin.x, coin.y);
+                    addScorePopup("+100", coin.x, coin.y, "#facc15");
+                    coinsList.splice(i, 1);
+                    continue;
+                }
+
+                if (coin.x < -30) coinsList.splice(i, 1);
+            }
+
+            // --- QUESTION (?) BLOCKS ---
+            for (let i = questionBlocks.length - 1; i >= 0; i--) {
+                const qb = questionBlocks[i];
+                qb.x -= gameSpeed;
+
+                ctx.fillStyle = qb.hit ? '#8A4000' : '#FCE021';
+                ctx.fillRect(qb.x, qb.y + qb.bounceY, qb.width, qb.height);
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(qb.x, qb.y + qb.bounceY, qb.width, qb.height);
+
+                if (!qb.hit) {
+                    ctx.fillStyle = '#8A4000';
+                    ctx.font = '16px "Press Start 2P"';
+                    ctx.fillText('?', qb.x + 9, qb.y + 24);
+
+                    // Mario Bump Block from Underneath
+                    if (mario.isJumping && mario.vy < 0 && checkCollision(mario, qb)) {
+                        qb.hit = true;
+                        qb.bounceY = -12;
+                        setTimeout(() => qb.bounceY = 0, 100);
+                        coins += 2;
+                        playSound('bump');
+                        playSound('coin');
+                        createSparkles(qb.x + 17, qb.y - 12);
+                        addScorePopup("ITEM!", qb.x, qb.y - 20, "#eab308");
+                    }
+                }
+
+                if (qb.x < -40) questionBlocks.splice(i, 1);
+            }
+
+            // --- RENDER FLOATING SCORE POPUPS ---
+            for (let i = scorePopups.length - 1; i >= 0; i--) {
+                const pop = scorePopups[i];
+                pop.y += pop.vy;
+                pop.life -= 0.03;
+
+                if (pop.life <= 0) {
+                    scorePopups.splice(i, 1);
+                    continue;
+                }
+
+                ctx.fillStyle = pop.color;
+                ctx.globalAlpha = pop.life;
+                ctx.font = '10px "Press Start 2P"';
+                ctx.fillText(pop.text, pop.x, pop.y);
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        function checkCollision(rect1, rect2) {
+            const padding = 4;
+            return (
+                rect1.x + padding < rect2.x + rect2.width &&
+                rect1.x + rect1.width - padding > rect2.x &&
+                rect1.y + padding < rect2.y + rect2.height &&
+                rect1.y + rect1.height - padding > rect2.y
+            );
+        }
+
+        function updateAndDrawParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.04;
+
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            drawBackground();
+            mario.draw();
+            updateGame();
+            updateAndDrawParticles();
+
+            animFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            initAudio();
+            gameState = 'PLAYING';
+            score = 0;
+            coins = 0;
+            distance = 0;
+            gameSpeed = 5.0;
+
+            obstacles = [];
+            coinsList = [];
+            questionBlocks = [];
+            particles = [];
+            scorePopups = [];
+
+            mario.y = GROUND_Y - mario.normalHeight;
+            mario.vy = 0;
+            mario.isJumping = false;
+            mario.isCrouching = false;
+
+            initParallax();
+
+            document.getElementById('start-overlay').classList.add('hidden');
+            document.getElementById('gameover-overlay').classList.add('hidden');
+            document.getElementById('pause-overlay').classList.add('hidden');
+
+            startBGM();
+
+            if (!animFrameId) {
+                gameLoop();
+            }
+        }
+
+        function gameOver() {
+            gameState = 'GAMEOVER';
+            playSound('hit');
+            setTimeout(() => playSound('gameover'), 180);
+            stopBGM();
+
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem('mario_microbit_highscore', highscore.toString());
+                document.getElementById('ui-highscore').textContent = String(highscore).padStart(6, '0');
+            }
+
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('final-coins').textContent = coins;
+            document.getElementById('final-highscore').textContent = highscore;
+
+            document.getElementById('gameover-overlay').classList.remove('hidden');
+        }
+
+        function togglePause() {
+            if (gameState === 'PLAYING') {
+                gameState = 'PAUSED';
+                stopBGM();
+                document.getElementById('pause-overlay').classList.remove('hidden');
+            } else if (gameState === 'PAUSED') {
+                gameState = 'PLAYING';
+                startBGM();
+                document.getElementById('pause-overlay').classList.add('hidden');
+            }
+        }
+
+        function handleCanvasClick() {
+            if (gameState === 'PLAYING') {
+                triggerJump("CANVAS_TAP");
+            }
+        }
+
+        /* ==========================================================================
+           4. KEYBOARD & UI MODAL LISTENERS
+           ========================================================================== */
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+                e.preventDefault();
+                triggerJump("KEY_[" + e.code + "]");
+            } else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+                e.preventDefault();
+                triggerCrouch("KEY_[" + e.code + "]");
+            } else if (e.code === 'KeyP' || e.code === 'Escape') {
+                togglePause();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+                mario.uncrouch();
+            }
+        });
+
+        // Guide Modal Controls & Tab Switching
+        function openGuideModal() {
+            document.getElementById('guide-modal').classList.remove('hidden');
+        }
+        function closeGuideModal() {
+            document.getElementById('guide-modal').classList.add('hidden');
+        }
+
+        function switchModalTab(tab) {
+            document.getElementById('tab-content-makecode').classList.add('hidden');
+            document.getElementById('tab-content-python').classList.add('hidden');
+            document.getElementById('tab-content-github').classList.add('hidden');
+
+            document.getElementById('tab-btn-makecode').className = "px-3 py-2 bg-slate-800 text-slate-300 font-bold rounded-t-lg";
+            document.getElementById('tab-btn-python').className = "px-3 py-2 bg-slate-800 text-slate-300 font-bold rounded-t-lg";
+            document.getElementById('tab-btn-github').className = "px-3 py-2 bg-slate-800 text-slate-300 font-bold rounded-t-lg";
+
+            if (tab === 'makecode') {
+                document.getElementById('tab-content-makecode').classList.remove('hidden');
+                document.getElementById('tab-btn-makecode').className = "px-3 py-2 bg-amber-500 text-slate-950 font-bold rounded-t-lg";
+            } else if (tab === 'python') {
+                document.getElementById('tab-content-python').classList.remove('hidden');
+                document.getElementById('tab-btn-python').className = "px-3 py-2 bg-amber-500 text-slate-950 font-bold rounded-t-lg";
+            } else if (tab === 'github') {
+                document.getElementById('tab-content-github').classList.remove('hidden');
+                document.getElementById('tab-btn-github').className = "px-3 py-2 bg-amber-500 text-slate-950 font-bold rounded-t-lg";
+            }
+        }
+
+        // Copy snippet to clipboard with execCommand fallback for iFrame compatibility
+        function copyToClipboard(elementId, btnId) {
+            const textToCopy = document.getElementById(elementId).innerText;
+            const tempInput = document.createElement("textarea");
+            tempInput.value = textToCopy;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            
+            try {
+                document.execCommand('copy');
+                const btn = document.getElementById(btnId);
+                const origText = btn.innerText;
+                btn.innerText = "✅ COPIED!";
+                btn.classList.add('bg-emerald-600');
+                setTimeout(() => {
+                    btn.innerText = origText;
+                    btn.classList.remove('bg-emerald-600');
+                }, 1500);
+            } catch (err) {
+                console.error('Failed to copy code: ', err);
+            } finally {
+                document.body.removeChild(tempInput);
+            }
+        }
+
+        // Initialize scene on load
+        window.onload = function() {
+            initParallax();
+            drawBackground();
+            mario.draw();
+        };
+    </script>
+</body>
+</html>
