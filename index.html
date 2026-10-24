@@ -40,7 +40,7 @@
         transition: all 0.08s ease-out;
         box-shadow: 0 6px 0 #881337, 0 10px 15px rgba(0,0,0,0.5);
     }
-    .btn-retro:active {
+    .btn-retro:not(:disabled):active {
         transform: translateY(4px);
         box-shadow: 0 2px 0 #881337, 0 4px 6px rgba(0,0,0,0.5);
     }
@@ -48,7 +48,7 @@
     .btn-green-retro {
         box-shadow: 0 6px 0 #14532d, 0 10px 15px rgba(0,0,0,0.5);
     }
-    .btn-green-retro:active {
+    .btn-green-retro:not(:disabled):active {
         transform: translateY(4px);
         box-shadow: 0 2px 0 #14532d, 0 4px 6px rgba(0,0,0,0.5);
     }
@@ -56,7 +56,7 @@
     .btn-blue-retro {
         box-shadow: 0 6px 0 #1e3a8a, 0 10px 15px rgba(0,0,0,0.5);
     }
-    .btn-blue-retro:active {
+    .btn-blue-retro:not(:disabled):active {
         transform: translateY(4px);
         box-shadow: 0 2px 0 #1e3a8a, 0 4px 6px rgba(0,0,0,0.5);
     }
@@ -64,7 +64,7 @@
     .btn-yellow-retro {
         box-shadow: 0 6px 0 #78350f, 0 10px 15px rgba(0,0,0,0.5);
     }
-    .btn-yellow-retro:active {
+    .btn-yellow-retro:not(:disabled):active {
         transform: translateY(4px);
         box-shadow: 0 2px 0 #78350f, 0 4px 6px rgba(0,0,0,0.5);
     }
@@ -86,7 +86,7 @@
 <body class="min-h-screen flex flex-col items-center justify-between p-2 sm:p-4 bg-slate-950 text-white">
 
 <!-- TOP HEADER / CONTROL BAR -->
-<header class="w-full max-w-5xl bg-slate-900 border-4 border-amber-500 rounded-2xl p-3 sm:p-4 mb-3 shadow-2xl flex flex-wrap items-center justify-between gap-3">
+<header class="w-full max-w-5xl bg-slate-900 border-4 border-amber-500 rounded-2xl p-3 sm:p-4 mb-3 shadow-2xl flex flex-wrap items-center justify-between gap-3 z-50 relative">
     <!-- Logo / Title -->
     <div class="flex items-center gap-3">
         <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-600 border-2 border-white rounded-xl flex items-center justify-center text-xl sm:text-2xl font-bold text-yellow-300 shadow-lg">
@@ -100,6 +100,21 @@
 
     <!-- Controls & Status Bar -->
     <div class="flex flex-wrap items-center gap-2 text-xs">
+        
+        <!-- Difficulty / Speed Settings -->
+        <div class="relative">
+            <button id="difficulty-btn" onclick="toggleDifficultyList()" class="btn-retro btn-yellow-retro bg-orange-600 hover:bg-orange-500 text-white font-bold px-3 py-2.5 rounded-xl text-[9px] sm:text-[10px] flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity">
+                ⚙️ SPEED: NORMAL
+            </button>
+            <!-- Dropdown List -->
+            <div id="difficulty-list" class="hidden absolute top-full mt-3 left-0 w-44 bg-slate-900 border-2 border-orange-500 rounded-xl shadow-[0_10px_25px_rgba(0,0,0,0.8)] z-50 flex flex-col overflow-hidden text-[9px] sm:text-[10px]">
+                <button onclick="setDifficulty(0.5, 'EASY')" class="hover:bg-slate-700 px-3 py-3 text-left text-emerald-400 font-bold border-b border-slate-700 transition-colors cursor-pointer">🟢 EASY (0.5x)</button>
+                <button onclick="setDifficulty(1.0, 'NORMAL')" class="hover:bg-slate-700 px-3 py-3 text-left text-yellow-400 font-bold border-b border-slate-700 transition-colors cursor-pointer">🟡 NORMAL (1.0x)</button>
+                <button onclick="setDifficulty(1.5, 'HARD')" class="hover:bg-slate-700 px-3 py-3 text-left text-red-400 font-bold border-b border-slate-700 transition-colors cursor-pointer">🔴 HARD (1.5x)</button>
+                <button onclick="setDifficulty(2.0, 'ULTIMATE')" class="hover:bg-slate-700 px-3 py-3 text-left text-purple-400 font-bold transition-colors cursor-pointer">😈 ULTIMATE (2.0x)</button>
+            </div>
+        </div>
+
         <!-- AR Camera Toggle -->
         <button id="ar-toggle-btn" onclick="toggleARCamera()" class="btn-retro btn-yellow-retro bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-2.5 rounded-xl text-[9px] sm:text-[10px] flex items-center gap-1.5 cursor-pointer">
             📷 AR WEBCAM (JUMP)
@@ -135,7 +150,7 @@
 </header>
 
 <!-- MAIN ARCADE CABINET CONTAINER -->
-<main class="w-full max-w-5xl relative flex flex-col items-center">
+<main class="w-full max-w-5xl relative flex flex-col items-center z-10">
     <!-- Outer Retro Machine Frame -->
     <div class="w-full relative bg-slate-900 border-4 sm:border-8 border-red-600 rounded-2xl shadow-[0_0_50px_rgba(239,68,68,0.25)] overflow-hidden">
 
@@ -375,6 +390,25 @@ sleep(20)</pre>
 </div>
 
 <script>
+    /* ==========================================================================
+       0. GAME DIFFICULTY SETTINGS
+       ========================================================================== */
+    let difficultyMultiplier = 1.0;
+
+    function toggleDifficultyList() {
+        if (gameState === 'PLAYING') return; // Double protection
+        document.getElementById('difficulty-list').classList.toggle('hidden');
+    }
+
+    function setDifficulty(multiplier, name) {
+        difficultyMultiplier = multiplier;
+        const btn = document.getElementById('difficulty-btn');
+        btn.innerHTML = `⚙️ SPEED: ${name}`;
+        
+        // Hide the dropdown
+        document.getElementById('difficulty-list').classList.add('hidden');
+    }
+
     /* ==========================================================================
        1. RETRO SYNTHESIZED AUDIO ENGINE (Web Audio API)
        ========================================================================== */
@@ -1005,7 +1039,7 @@ sleep(20)</pre>
 
         ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
         clouds.forEach(c => {
-            c.x -= c.speed * dt;
+            c.x -= c.speed * dt * (difficultyMultiplier >= 1 ? difficultyMultiplier : 1);
             if (c.x + c.size * 2 < 0) c.x = CANVAS_WIDTH + 50;
 
             ctx.beginPath();
@@ -1053,23 +1087,29 @@ sleep(20)</pre>
         if (gameState !== 'PLAYING') return;
 
         distance += 0.1 * dt;
-        gameSpeed = 5.0 + Math.min(6.5, distance * 0.005);
+        
+        // Calculate Speed considering the multiplier from Settings
+        let baseSpeed = 5.0 + Math.min(6.5, distance * 0.005);
+        gameSpeed = baseSpeed * difficultyMultiplier;
+        
         score = Math.floor(distance * 10) + (coins * 100);
 
         document.getElementById('ui-score').textContent = String(score).padStart(6, '0');
         document.getElementById('ui-coins').textContent = `🪙 ${coins}`;
+        // Show correct multiplier in UI based on difficulty
         document.getElementById('ui-speed').textContent = `${(gameSpeed / 5.0).toFixed(1)}x`;
 
         mario.update(dt);
 
+        // Adjust spawn timers so density remains similar even with faster/slower speeds
         obstacleSpawnTimer += dt;
-        if (obstacleSpawnTimer > 105 - Math.min(45, gameSpeed * 4.5)) {
+        if (obstacleSpawnTimer > (105 - Math.min(45, baseSpeed * 4.5)) / difficultyMultiplier) {
             spawnObstacle();
             obstacleSpawnTimer = 0;
         }
 
         coinSpawnTimer += dt;
-        if (coinSpawnTimer > 150) {
+        if (coinSpawnTimer > 150 / difficultyMultiplier) {
             spawnCollectibles();
             coinSpawnTimer = 0;
         }
@@ -1297,8 +1337,11 @@ sleep(20)</pre>
         score = 0;
         coins = 0;
         distance = 0;
-        gameSpeed = 5.0;
         lastTime = performance.now();
+        
+        // Disable Settings button while game is running
+        document.getElementById('difficulty-btn').disabled = true;
+        document.getElementById('difficulty-list').classList.add('hidden'); // ensure list closes
 
         obstacles = [];
         coinsList = [];
@@ -1326,6 +1369,10 @@ sleep(20)</pre>
 
     function gameOver() {
         gameState = 'GAMEOVER';
+        
+        // Re-enable settings button so user can change difficulty between rounds
+        document.getElementById('difficulty-btn').disabled = false;
+        
         playSound('hit');
         setTimeout(() => playSound('gameover'), 180);
         stopBGM();
