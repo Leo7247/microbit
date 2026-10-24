@@ -337,7 +337,8 @@
         <button onclick="toggleDebugPanel()" class="text-slate-400 hover:text-white font-bold">✕</button>
     </div>
     <div class="relative aspect-video bg-black rounded-lg overflow-hidden border border-slate-700 mb-2">
-        <video id="ar-video" class="hidden" playsinline></video>
+        <!-- FIXED VIDEO TAG: Removed 'hidden' class to prevent browser optimizations from freezing the MediaPipe feed! -->
+        <video id="ar-video" class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none" playsinline></video>
         <canvas id="ar-debug-canvas" class="w-full h-full object-cover"></canvas>
         <div id="ar-jump-indicator" class="absolute top-2 right-2 bg-red-600 text-white font-bold text-[8px] px-2 py-1 rounded opacity-0 transition-opacity duration-150">
             JUMP DETECTED!
@@ -1449,20 +1450,24 @@ while True:
 
     async function toggleARCamera() {
         const arBtn = document.getElementById('ar-toggle-btn');
-        if (!arActive) {
-            const success = await initARCamera();
-            if (success) {
-                arActive = true;
-                arBtn.classList.remove('bg-amber-600'); arBtn.classList.add('bg-emerald-600', 'led-pulse');
-                arBtn.innerText = "📷 AR ACTIVE (JUMP/RUN)";
-                document.getElementById('ar-debug-panel').classList.remove('hidden');
+        try {
+            if (!arActive) {
+                const success = await initARCamera();
+                if (success) {
+                    arActive = true;
+                    arBtn.classList.remove('bg-amber-600'); arBtn.classList.add('bg-emerald-600', 'led-pulse');
+                    arBtn.innerText = "📷 AR ACTIVE (JUMP/RUN)";
+                    document.getElementById('ar-debug-panel').classList.remove('hidden');
+                }
+            } else {
+                stopARCamera();
+                arActive = false;
+                arBtn.classList.remove('bg-emerald-600', 'led-pulse'); arBtn.classList.add('bg-amber-600');
+                arBtn.innerText = "📷 AR WEBCAM (JUMP/RUN)";
+                document.getElementById('ar-debug-panel').classList.add('hidden');
             }
-        } else {
-            stopARCamera();
-            arActive = false;
-            arBtn.classList.remove('bg-emerald-600', 'led-pulse'); arBtn.classList.add('bg-amber-600');
-            arBtn.innerText = "📷 AR WEBCAM (JUMP/RUN)";
-            document.getElementById('ar-debug-panel').classList.add('hidden');
+        } catch (err) {
+            console.error("Camera Toggle Error: ", err);
         }
     }
 
@@ -1478,7 +1483,11 @@ while True:
                 poseDetector.onResults(onPoseResults);
 
                 cameraUtil = new Camera(videoElement, {
-                    onFrame: async () => { await poseDetector.send({ image: videoElement }); processFrameMotion(videoElement); },
+                    onFrame: async () => { 
+                        if(!arActive) return; // Prevent loop if toggled off quickly
+                        await poseDetector.send({ image: videoElement }); 
+                        processFrameMotion(videoElement); 
+                    },
                     width: 320, height: 240
                 });
                 await cameraUtil.start();
@@ -1489,7 +1498,11 @@ while True:
                 videoElement.srcObject = cameraStream; await videoElement.play();
 
                 function processLoop() {
-                    if (arActive) { processFrameMotion(videoElement); requestAnimationFrame(processLoop); }
+                    // Check if stream is still active
+                    if (cameraStream && cameraStream.active) { 
+                        processFrameMotion(videoElement); 
+                        requestAnimationFrame(processLoop); 
+                    }
                 }
                 processLoop();
 
@@ -1546,6 +1559,8 @@ while True:
         const debugCanvas = document.getElementById('ar-debug-canvas');
         const debugCtx = debugCanvas.getContext('2d');
         if (!debugCanvas.width) { debugCanvas.width = 320; debugCanvas.height = 240; }
+        
+        // If posenet is not doing drawing for us, manually draw optical frame
         if (!poseDetector) debugCtx.drawImage(videoElement, 0, 0, debugCanvas.width, debugCanvas.height);
 
         try {
