@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Mario Micro:bit Runner - Advanced RPG Edition</title>
+    <title>Super Mario Micro:bit Runner - GitHub Pages Game</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Font 'Press Start 2P' for Retro Arcade Typography -->
@@ -45,17 +45,37 @@
         box-shadow: 0 2px 0 #881337, 0 4px 6px rgba(0,0,0,0.5);
     }
 
-    .btn-green-retro { box-shadow: 0 6px 0 #14532d, 0 10px 15px rgba(0,0,0,0.5); }
-    .btn-green-retro:not(:disabled):active { transform: translateY(4px); box-shadow: 0 2px 0 #14532d, 0 4px 6px rgba(0,0,0,0.5); }
+    .btn-green-retro {
+        box-shadow: 0 6px 0 #14532d, 0 10px 15px rgba(0,0,0,0.5);
+    }
+    .btn-green-retro:not(:disabled):active {
+        transform: translateY(4px);
+        box-shadow: 0 2px 0 #14532d, 0 4px 6px rgba(0,0,0,0.5);
+    }
 
-    .btn-blue-retro { box-shadow: 0 6px 0 #1e3a8a, 0 10px 15px rgba(0,0,0,0.5); }
-    .btn-blue-retro:not(:disabled):active { transform: translateY(4px); box-shadow: 0 2px 0 #1e3a8a, 0 4px 6px rgba(0,0,0,0.5); }
+    .btn-blue-retro {
+        box-shadow: 0 6px 0 #1e3a8a, 0 10px 15px rgba(0,0,0,0.5);
+    }
+    .btn-blue-retro:not(:disabled):active {
+        transform: translateY(4px);
+        box-shadow: 0 2px 0 #1e3a8a, 0 4px 6px rgba(0,0,0,0.5);
+    }
 
-    .btn-yellow-retro { box-shadow: 0 6px 0 #78350f, 0 10px 15px rgba(0,0,0,0.5); }
-    .btn-yellow-retro:not(:disabled):active { transform: translateY(4px); box-shadow: 0 2px 0 #78350f, 0 4px 6px rgba(0,0,0,0.5); }
-
-    .btn-purple-retro { box-shadow: 0 6px 0 #4c1d95, 0 10px 15px rgba(0,0,0,0.5); }
-    .btn-purple-retro:not(:disabled):active { transform: translateY(4px); box-shadow: 0 2px 0 #4c1d95, 0 4px 6px rgba(0,0,0,0.5); }
+    .btn-yellow-retro {
+        box-shadow: 0 6px 0 #78350f, 0 10px 15px rgba(0,0,0,0.5);
+    }
+    .btn-yellow-retro:not(:disabled):active {
+        transform: translateY(4px);
+        box-shadow: 0 2px 0 #78350f, 0 4px 6px rgba(0,0,0,0.5);
+    }
+    
+    .btn-purple-retro {
+        box-shadow: 0 6px 0 #4c1d95, 0 10px 15px rgba(0,0,0,0.5);
+    }
+    .btn-purple-retro:not(:disabled):active {
+        transform: translateY(4px);
+        box-shadow: 0 2px 0 #4c1d95, 0 4px 6px rgba(0,0,0,0.5);
+    }
 
     /* LED Pulsing animation for serial connection */
     .led-pulse {
@@ -65,6 +85,10 @@
         from { box-shadow: 0 0 4px #22c55e, 0 0 8px #22c55e; }
         to { box-shadow: 0 0 16px #22c55e, 0 0 28px #22c55e; }
     }
+
+    .arcade-border {
+        border-image: linear-gradient(to bottom, #f59e0b, #ef4444) 1;
+    }
 </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-between p-2 sm:p-4 bg-slate-950 text-white">
@@ -73,10 +97,12 @@
 <header class="w-full max-w-5xl bg-slate-900 border-4 border-amber-500 rounded-2xl p-3 sm:p-4 mb-3 shadow-2xl flex flex-wrap items-center justify-between gap-3 z-50 relative">
     <!-- Logo / Title -->
     <div class="flex items-center gap-3">
-        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-600 border-2 border-white rounded-xl flex items-center justify-center text-xl sm:text-2xl font-bold text-yellow-300 shadow-lg">M</div>
+        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-600 border-2 border-white rounded-xl flex items-center justify-center text-xl sm:text-2xl font-bold text-yellow-300 shadow-lg">
+            M
+        </div>
         <div>
-            <h1 class="text-xs sm:text-base text-yellow-400 drop-shadow-[0_2px_0_#000]">MARIO RUNNER RPG</h1>
-            <p class="text-[8px] sm:text-[10px] text-slate-400 mt-1">AR WEBCAM & MICRO:BIT ENABLED</p>
+            <h1 class="text-xs sm:text-base text-yellow-400 drop-shadow-[0_2px_0_#000]">SUPER MARIO RUNNER</h1>
+            <p class="text-[8px] sm:text-[10px] text-slate-400 mt-1">MICRO:BIT WEB SERIAL & HIGH FPS AR EDITION</p>
         </div>
     </div>
 
@@ -93,12 +119,12 @@
             <button id="difficulty-btn" onclick="toggleDifficultyList()" class="btn-retro btn-yellow-retro bg-orange-600 hover:bg-orange-500 text-white font-bold px-3 py-2.5 rounded-xl text-[9px] sm:text-[10px] flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity">
                 ⚙️ SPEED: NORMAL
             </button>
+            <!-- Dropdown List -->
             <div id="difficulty-list" class="hidden absolute top-full mt-3 left-0 w-44 bg-slate-900 border-2 border-orange-500 rounded-xl shadow-[0_10px_25px_rgba(0,0,0,0.8)] z-50 flex flex-col overflow-hidden text-[9px] sm:text-[10px]">
-                <button onclick="setDifficulty(0.5, 'SUPA EASY')" class="hover:bg-slate-700 px-3 py-3 text-left text-cyan-400 font-bold border-b border-slate-700">🔵 SUPA EASY (0.5x)</button>
-                <button onclick="setDifficulty(1.0, 'EASY')" class="hover:bg-slate-700 px-3 py-3 text-left text-emerald-400 font-bold border-b border-slate-700">🟢 EASY (1.0x)</button>
-                <button onclick="setDifficulty(1.5, 'NORMAL')" class="hover:bg-slate-700 px-3 py-3 text-left text-yellow-400 font-bold border-b border-slate-700">🟡 NORMAL (1.5x)</button>
-                <button onclick="setDifficulty(2.0, 'HARD')" class="hover:bg-slate-700 px-3 py-3 text-left text-red-400 font-bold border-b border-slate-700">🔴 HARD (2.0x)</button>
-                <button onclick="setDifficulty(2.5, 'ULTIMATE')" class="hover:bg-slate-700 px-3 py-3 text-left text-purple-400 font-bold">😈 ULTIMATE (2.5x)</button>
+                <button onclick="setDifficulty(0.5, 'EASY')" class="hover:bg-slate-700 px-3 py-3 text-left text-emerald-400 font-bold border-b border-slate-700 transition-colors cursor-pointer">🟢 EASY (0.5x)</button>
+                <button onclick="setDifficulty(1.0, 'NORMAL')" class="hover:bg-slate-700 px-3 py-3 text-left text-yellow-400 font-bold border-b border-slate-700 transition-colors cursor-pointer">🟡 NORMAL (1.0x)</button>
+                <button onclick="setDifficulty(1.5, 'HARD')" class="hover:bg-slate-700 px-3 py-3 text-left text-red-400 font-bold border-b border-slate-700 transition-colors cursor-pointer">🔴 HARD (1.5x)</button>
+                <button onclick="setDifficulty(2.0, 'ULTIMATE')" class="hover:bg-slate-700 px-3 py-3 text-left text-purple-400 font-bold transition-colors cursor-pointer">😈 ULTIMATE (2.0x)</button>
             </div>
         </div>
 
@@ -107,13 +133,32 @@
             📷 AR WEBCAM (JUMP/RUN)
         </button>
 
+        <!-- Debug Panel Toggle -->
+        <button id="debug-toggle-btn" onclick="toggleDebugPanel()" class="btn-retro btn-blue-retro bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-2.5 rounded-xl text-[9px] sm:text-[10px] flex items-center gap-1.5 cursor-pointer">
+            🐞 DEBUG PANEL
+        </button>
+
+        <!-- Connection Status Badge -->
+        <div id="serial-status-badge" class="flex items-center gap-2 bg-slate-950 border-2 border-slate-700 px-3 py-2 rounded-xl text-[9px] sm:text-[10px]">
+            <span id="status-led" class="w-3 h-3 rounded-full bg-red-500 inline-block transition-all duration-300"></span>
+            <span id="status-text" class="text-slate-300">DISCONNECTED</span>
+        </div>
+
         <!-- Connect Button -->
         <button id="connect-btn" onclick="toggleSerialConnection()" class="btn-retro btn-green-retro bg-green-600 hover:bg-green-500 text-white font-bold px-3 py-2.5 rounded-xl text-[9px] sm:text-[10px] flex items-center gap-1.5 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
             CONNECT MICRO:BIT
         </button>
 
-        <!-- Sound Toggle -->
-        <button id="audio-toggle-btn" onclick="toggleAudio()" class="bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 p-2 rounded-xl text-yellow-400 cursor-pointer text-xs" title="Toggle Sound">🔊</button>
+        <!-- Guide Modal Button -->
+        <button onclick="openGuideModal()" class="btn-retro btn-blue-retro bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-2.5 rounded-xl text-[9px] sm:text-[10px] flex items-center gap-1 cursor-pointer">
+            <span>?</span> SETUP & CODE
+        </button>
+
+        <!-- Sound Mute Toggle -->
+        <button id="audio-toggle-btn" onclick="toggleAudio()" class="bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 p-2 rounded-xl text-yellow-400 cursor-pointer" title="Toggle Sound">
+            <span id="audio-icon" class="text-xs">🔊</span>
+        </button>
     </div>
 </header>
 
@@ -122,16 +167,19 @@
     <!-- Outer Retro Machine Frame -->
     <div class="w-full relative bg-slate-900 border-4 sm:border-8 border-red-600 rounded-2xl shadow-[0_0_50px_rgba(239,68,68,0.25)] overflow-hidden">
 
-        <!-- RPG Stats Header Bar -->
-        <div class="bg-black/90 px-3 sm:px-6 py-2.5 border-b-4 border-yellow-500 flex justify-between items-center text-[9px] sm:text-[11px] text-yellow-300">
-            <div class="flex gap-3 sm:gap-5">
+        <!-- Stats Header Bar -->
+        <div class="bg-black/90 px-3 sm:px-6 py-2.5 border-b-4 border-yellow-500 flex justify-between items-center text-[8px] sm:text-xs text-yellow-300">
+            <div class="flex gap-2 sm:gap-4 flex-wrap">
                 <span>LVL: <span id="ui-level" class="text-fuchsia-400 font-bold">1</span></span>
                 <span>BANK: <span id="ui-bank" class="text-yellow-400 font-bold">🪙 0</span></span>
-                <span>SCORE: <span id="ui-score" class="text-white">0</span></span>
+                <span>SCORE: <span id="ui-score" class="text-white">000000</span></span>
+                <span>COINS: <span id="ui-coins" class="text-yellow-400">🪙 0</span></span>
             </div>
-            <div class="flex gap-3 sm:gap-5">
+            <div class="flex gap-2 sm:gap-4 flex-wrap justify-end">
                 <span>HP: <span id="ui-hp" class="text-red-500 font-bold">❤️</span></span>
-                <span>RUN SPEED: <span id="ui-speed" class="text-cyan-400">1.5x</span></span>
+                <span>FPS: <span id="ui-fps" class="text-emerald-400">60</span></span>
+                <span>BEST: <span id="ui-highscore" class="text-emerald-400">000000</span></span>
+                <span>SPEED: <span id="ui-speed" class="text-cyan-400">1.0x</span></span>
             </div>
         </div>
 
@@ -141,33 +189,88 @@
 
             <!-- OVERLAY: START SCREEN -->
             <div id="start-overlay" class="absolute inset-0 bg-black/80 backdrop-blur-xs flex flex-col items-center justify-center p-4 text-center z-10">
-                <div class="w-16 h-16 bg-red-600 border-4 border-white rounded-2xl flex items-center justify-center text-3xl font-bold text-yellow-300 mb-3 shadow-xl animate-bounce">M</div>
-                <h2 class="text-lg sm:text-3xl text-yellow-400 mb-2 drop-shadow-[0_4px_0_#991b1b]">SUPER MARIO RUNNER RPG</h2>
+                <div class="w-16 h-16 bg-red-600 border-4 border-white rounded-2xl flex items-center justify-center text-3xl font-bold text-yellow-300 mb-3 shadow-xl animate-bounce">
+                    M
+                </div>
+                <h2 class="text-lg sm:text-3xl text-yellow-400 mb-2 drop-shadow-[0_4px_0_#991b1b]">SUPER MARIO RUNNER</h2>
+                <p class="text-[10px] sm:text-xs text-cyan-300 mb-6 tracking-wide">MICRO:BIT & HIGH-FPS AR WEBCAM GAME</p>
                 
                 <div class="bg-slate-900/90 border-2 border-amber-500 p-3 sm:p-4 rounded-xl max-w-md mb-6 text-[9px] sm:text-[11px] text-slate-300 leading-relaxed text-left space-y-1.5">
-                    <p class="text-yellow-300 font-bold">🎮 HOW TO PLAY:</p>
-                    <p>• Collect Coins & Earn XP Score to Level Up!</p>
-                    <p>• Visit the 🛒 SHOP to buy Double Jumps, Size & Health!</p>
-                    <p>• <span class="text-amber-400 font-bold">AR WebCam</span> = Jump physical body to Jump! Buy AR Sync to Run!</p>
-                    <p>• <span class="text-red-400 font-bold">Micro:bit</span> = Press A+B to Jump | Press B to Crouch.</p>
+                    <p class="text-yellow-300 font-bold">🎮 GAMEPLAY CONTROLS:</p>
+                    <p>• <span class="text-amber-400 font-bold">AR WebCam</span> = Jump physical body in front of camera!</p>
+                    <p>• <span class="text-fuchsia-400 font-bold">Upgrades</span> = Score points to level up, get coins, and buy Multi-jumps & AR Run Detection!</p>
+                    <p>• <span class="text-red-400 font-bold">Micro:bit Press A+B</span> = JUMP!</p>
+                    <p>• <span class="text-yellow-400 font-bold">Micro:bit Press B</span> = CROUCH / FAST DROP</p>
+                    <p>• <span class="text-emerald-400 font-bold">Keyboard</span> = Space / Up Arrow / W (Jump) | Down / S (Crouch)</p>
+                    <p>• <span class="text-cyan-400 font-bold">Touch Screen</span> = Tap Screen or On-Screen Arcade Buttons</p>
                 </div>
 
-                <button onclick="startGame()" class="btn-retro bg-red-600 hover:bg-red-500 text-yellow-300 font-bold text-xs sm:text-sm px-8 py-4 rounded-xl border-2 border-white shadow-2xl">
-                    START GAME
+                <button onclick="startGame()" class="btn-retro bg-red-600 hover:bg-red-500 text-yellow-300 font-bold text-xs sm:text-sm px-8 py-4 rounded-xl border-2 border-white cursor-pointer shadow-2xl">
+                    START GAME (A+B)
                 </button>
             </div>
 
-            <!-- OVERLAY: GAME OVER -->
+            <!-- OVERLAY: GAME OVER SCREEN -->
             <div id="gameover-overlay" class="hidden absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-4 text-center z-10">
                 <h2 class="text-2xl sm:text-4xl text-red-500 mb-2 drop-shadow-[0_4px_0_#000] animate-pulse">GAME OVER</h2>
+                <p class="text-xs sm:text-sm text-yellow-400 mb-6">MARIO GOT HIT!</p>
+
                 <div class="bg-slate-900 border-2 border-slate-700 p-4 rounded-xl min-w-[280px] mb-6 text-[10px] sm:text-xs space-y-3">
-                    <div class="flex justify-between"><span class="text-slate-400">FINAL SCORE:</span><span id="final-score" class="text-white font-bold">0</span></div>
-                    <div class="flex justify-between"><span class="text-slate-400">COINS EARNED:</span><span id="final-coins" class="text-yellow-400 font-bold">0</span></div>
-                    <div class="flex justify-between border-t border-slate-800 pt-2"><span class="text-fuchsia-400">CURRENT LEVEL:</span><span id="final-level" class="text-fuchsia-400 font-bold">1</span></div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">FINAL SCORE:</span>
+                        <span id="final-score" class="text-white font-bold">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">COINS COLLECTED:</span>
+                        <span id="final-coins" class="text-yellow-400 font-bold">0</span>
+                    </div>
+                    <div class="flex justify-between border-t border-slate-800 pt-2">
+                        <span class="text-slate-400">BEST HIGH SCORE:</span>
+                        <span id="final-highscore" class="text-emerald-400 font-bold">0</span>
+                    </div>
                 </div>
-                <button onclick="startGame()" class="btn-retro bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl border-2 border-white shadow-xl">
-                    PLAY AGAIN
+
+                <button onclick="startGame()" class="btn-retro bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl border-2 border-white cursor-pointer shadow-xl">
+                    PLAY AGAIN (PRESS A+B)
                 </button>
+            </div>
+
+            <!-- OVERLAY: PAUSE SCREEN -->
+            <div id="pause-overlay" class="hidden absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-4 z-10">
+                <h2 class="text-2xl text-yellow-400 mb-4 tracking-widest">PAUSED</h2>
+                <p class="text-[10px] text-white mb-4">PRESS 'P' OR ESC TO RESUME</p>
+                <button onclick="togglePause()" class="btn-retro bg-blue-600 hover:bg-blue-500 text-white text-xs px-6 py-3 rounded-xl border border-white">RESUME</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM BAR: TOUCH CONTROLS & MICRO:BIT TELEMETRY LOG -->
+    <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+        <!-- On-Screen Arcade Touch Controls for Mobile/Tablet -->
+        <div class="bg-slate-900 border-2 border-slate-800 rounded-xl p-3 flex flex-col justify-between">
+            <span class="text-[10px] text-yellow-400 font-bold mb-2 block text-center sm:text-left">🕹️ ON-SCREEN ARCADE CONTROLS</span>
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="triggerJump('TOUCH_BUTTON_AB')" class="btn-retro bg-red-600 active:bg-red-700 text-white font-bold py-3 px-2 rounded-xl text-[10px] flex items-center justify-center gap-1 cursor-pointer">
+                    🔴 JUMP (A+B)
+                </button>
+                <button onclick="triggerCrouch('TOUCH_BUTTON_B')" class="btn-retro btn-yellow-retro bg-amber-600 active:bg-amber-700 text-white font-bold py-3 px-2 rounded-xl text-[10px] flex items-center justify-center gap-1 cursor-pointer">
+                    🟡 CROUCH (B)
+                </button>
+            </div>
+            <p class="text-[8px] text-slate-400 text-center mt-2">Works on touch devices & desktop</p>
+        </div>
+
+        <!-- Serial Signal & Live Telemetry Monitor -->
+        <div class="md:col-span-2 bg-slate-900 border-2 border-slate-800 rounded-xl p-3 text-[10px]">
+            <div class="flex items-center justify-between mb-2 border-b border-slate-800 pb-1.5">
+                <span class="text-slate-400 font-bold flex items-center gap-2">
+                    <span id="telemetry-led" class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                    MICRO:BIT SERIAL TELEMETRY LOG
+                </span>
+                <span id="last-signal-time" class="text-slate-500 text-[9px]">NO SIGNAL</span>
+            </div>
+            <div id="serial-log" class="bg-black/90 rounded-lg p-2.5 text-emerald-400 font-mono h-20 overflow-y-auto border border-slate-800 space-y-1 text-[9px]">
+                <div class="text-slate-500">[System] Web Serial API ready. Connect your BBC micro:bit via USB.</div>
             </div>
         </div>
     </div>
@@ -190,7 +293,7 @@
                     <p class="text-slate-400 mb-2">Take a hit without dying. (Max 3)</p>
                     <p class="text-white mb-2">Current: <span id="shop-hp-lvl">1</span>/3 HP</p>
                 </div>
-                <button onclick="buyUpgrade('health', 150)" class="btn-retro bg-green-600 text-white font-bold py-2 rounded-lg w-full">BUY (150 🪙)</button>
+                <button onclick="buyUpgrade('health', 150)" class="btn-retro bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-lg w-full transition-colors">BUY (150 🪙)</button>
             </div>
             <!-- Item 2 -->
             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-between">
@@ -199,52 +302,187 @@
                     <p class="text-slate-400 mb-2">Become Bigger Mario! (Max 1)</p>
                     <p class="text-white mb-2">Unlocked: <span id="shop-size-lvl">NO</span></p>
                 </div>
-                <button onclick="buyUpgrade('size', 300)" class="btn-retro bg-green-600 text-white font-bold py-2 rounded-lg w-full">BUY (300 🪙)</button>
+                <button onclick="buyUpgrade('size', 300)" class="btn-retro bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-lg w-full transition-colors">BUY (300 🪙)</button>
             </div>
             <!-- Item 3 -->
             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-between">
                 <div>
                     <h4 class="text-cyan-400 font-bold text-xs mb-1">🦘 Multi-Jump</h4>
-                    <p class="text-slate-400 mb-2">Jump again in mid-air. (Max 3 Jumps)</p>
-                    <p class="text-white mb-2">Current Max: <span id="shop-jump-lvl">1</span></p>
+                    <p class="text-slate-400 mb-2">Jump again in mid-air. (Double/Triple Jump)</p>
+                    <p class="text-white mb-2">Current Max: <span id="shop-jump-lvl">1</span> (Max 3)</p>
                 </div>
-                <button onclick="buyUpgrade('jumps', 250)" class="btn-retro bg-green-600 text-white font-bold py-2 rounded-lg w-full">BUY (250 🪙)</button>
+                <button onclick="buyUpgrade('jumps', 250)" class="btn-retro bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-lg w-full transition-colors">BUY (250 🪙)</button>
             </div>
             <!-- Item 4 -->
             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-between">
                 <div>
                     <h4 class="text-fuchsia-400 font-bold text-xs mb-1">🏃 AR Auto-Run Sync</h4>
-                    <p class="text-slate-400 mb-2">WebCam detects your running to speed up the game!</p>
+                    <p class="text-slate-400 mb-2">WebCam detects if you run on the spot to speed up!</p>
                     <p class="text-white mb-2">Unlocked: <span id="shop-ar-lvl">NO</span></p>
                 </div>
-                <button onclick="buyUpgrade('arRun', 600)" class="btn-retro bg-green-600 text-white font-bold py-2 rounded-lg w-full">BUY (600 🪙)</button>
+                <button onclick="buyUpgrade('arRun', 600)" class="btn-retro bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-lg w-full transition-colors">BUY (600 🪙)</button>
             </div>
         </div>
 
-        <div class="text-center pt-2">
+        <div class="text-center pt-2 mt-2 border-t border-slate-800">
             <button onclick="closeShopModal()" class="btn-retro bg-slate-700 hover:bg-slate-600 text-white font-bold px-6 py-2 rounded-xl text-xs">BACK TO GAME</button>
+        </div>
+    </div>
+</div>
+
+<!-- AR CAMERA DEBUG OVERLAY PANEL -->
+<div id="ar-debug-panel" class="hidden fixed bottom-4 right-4 z-40 bg-slate-900/95 border-4 border-amber-500 rounded-2xl p-3 text-xs w-72 sm:w-80 shadow-2xl backdrop-blur">
+    <div class="flex items-center justify-between mb-2 border-b border-slate-700 pb-1.5">
+        <span class="font-bold text-yellow-400 text-[10px] sm:text-xs">📷 AR JUMP CAMERA DEBUG</span>
+        <button onclick="toggleDebugPanel()" class="text-slate-400 hover:text-white font-bold">✕</button>
+    </div>
+    <div class="relative aspect-video bg-black rounded-lg overflow-hidden border border-slate-700 mb-2">
+        <video id="ar-video" class="hidden" playsinline></video>
+        <canvas id="ar-debug-canvas" class="w-full h-full object-cover"></canvas>
+        <div id="ar-jump-indicator" class="absolute top-2 right-2 bg-red-600 text-white font-bold text-[8px] px-2 py-1 rounded opacity-0 transition-opacity duration-150">
+            JUMP DETECTED!
+        </div>
+    </div>
+    <div class="space-y-1 text-[9px] font-mono text-slate-300">
+        <div class="flex justify-between">
+            <span>STATUS:</span>
+            <span id="ar-status-text" class="text-amber-400 font-bold">INITIALIZING...</span>
+        </div>
+        <div class="flex justify-between">
+            <span>SHOULDER DELTA Y:</span>
+            <span id="ar-delta-y" class="text-cyan-400">0.00</span>
+        </div>
+        <div class="flex justify-between">
+            <span>MOTION INTENSITY:</span>
+            <span id="ar-motion-level" class="text-emerald-400">0.00</span>
+        </div>
+        <div class="flex justify-between">
+            <span>AR RUN STATE:</span>
+            <span id="ar-run-state" class="text-fuchsia-400 font-bold">IDLE</span>
+        </div>
+        <div class="flex justify-between border-t border-slate-800 pt-1 mt-1">
+            <span>SENSITIVITY THRESHOLD:</span>
+            <span class="text-yellow-400">0.025</span>
+        </div>
+    </div>
+</div>
+
+<!-- MICRO:BIT & GITHUB PAGES SETUP MODAL -->
+<div id="guide-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-slate-900 border-4 border-amber-500 rounded-2xl max-w-3xl w-full max-h-[92vh] overflow-y-auto p-4 sm:p-6 text-xs text-slate-200 shadow-2xl space-y-5">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <h3 class="text-xs sm:text-sm text-yellow-400 font-bold flex items-center gap-2">
+                ⚡ MICRO:BIT PROGRAMMING & GITHUB PAGES GUIDE
+            </h3>
+            <button onclick="closeGuideModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+        </div>
+
+        <!-- Tab Buttons -->
+        <div class="flex border-b border-slate-800 gap-2 text-[10px]">
+            <button id="tab-btn-makecode" onclick="switchModalTab('makecode')" class="px-3 py-2 bg-amber-500 text-slate-950 font-bold rounded-t-lg">1. MakeCode Blocks / JS</button>
+            <button id="tab-btn-python" onclick="switchModalTab('python')" class="px-3 py-2 bg-slate-800 text-slate-300 font-bold rounded-t-lg">2. MicroPython</button>
+            <button id="tab-btn-github" onclick="switchModalTab('github')" class="px-3 py-2 bg-slate-800 text-slate-300 font-bold rounded-t-lg">3. GitHub Pages Setup</button>
+        </div>
+
+        <!-- Tab 1: MakeCode -->
+        <div id="tab-content-makecode" class="space-y-3 text-[10px] sm:text-xs">
+            <p class="text-slate-300">Follow these easy steps to program your BBC micro:bit in MakeCode:</p>
+            <ol class="list-decimal list-inside space-y-1.5 text-slate-300 leading-relaxed bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                <li>Open <a href="https://makecode.microbit.org" target="_blank" class="text-cyan-400 underline font-bold">makecode.microbit.org</a> in your browser.</li>
+                <li>Add an <span class="text-pink-400 font-bold">on button A+B pressed</span> block.</li>
+                <li>Inside it, add a <span class="text-blue-400 font-bold">serial write line "A+B"</span> block from the <span class="text-blue-400 font-bold">Serial</span> category.</li>
+                <li>Connect micro:bit via USB and click **Download** to flash your micro:bit.</li>
+            </ol>
+
+            <div class="bg-black/90 p-3 rounded-xl border border-slate-800 space-y-2">
+                <div class="flex justify-between items-center text-[10px]">
+                    <span class="text-yellow-400 font-bold">MakeCode JavaScript Code Snippet:</span>
+                    <button onclick="copyToClipboard('makecode-js-code', 'makecode-copy-btn')" id="makecode-copy-btn" class="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-[9px] text-white">📋 COPY CODE</button>
+                </div>
+                <pre id="makecode-js-code" class="text-emerald-400 font-mono text-[9px] sm:text-[10px] overflow-x-auto p-2 bg-slate-950 rounded">
+input.onButtonPressed(Button.AB, function () { 
+serial.writeLine("A+B") 
+basic.showIcon(IconNames.Happy) 
+}) 
+input.onButtonPressed(Button.A, function () { 
+serial.writeLine("A") 
+}) 
+input.onButtonPressed(Button.B, function () { 
+serial.writeLine("B") 
+})</pre> 
+</div> 
+</div>
+
+        <!-- Tab 2: MicroPython -->
+        <div id="tab-content-python" class="hidden space-y-3 text-[10px] sm:text-xs">
+            <p class="text-slate-300">If you prefer MicroPython on micro:bit, use this code:</p>
+            <div class="bg-black/90 p-3 rounded-xl border border-slate-800 space-y-2">
+                <div class="flex justify-between items-center text-[10px]">
+                    <span class="text-yellow-400 font-bold">MicroPython Code:</span>
+                    <button onclick="copyToClipboard('python-code', 'python-copy-btn')" id="python-copy-btn" class="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-[9px] text-white">📋 COPY PYTHON</button>
+                </div>
+                <pre id="python-code" class="text-emerald-400 font-mono text-[9px] sm:text-[10px] overflow-x-auto p-2 bg-slate-950 rounded">
+from microbit import *
+
+# Initialize USB serial at 115200 baud
+uart.init(baudrate=115200)
+
+while True: 
+    if button_a.is_pressed() and button_b.is_pressed(): 
+        print("A+B") 
+        display.show(Image.ARROW_N) 
+        sleep(180) 
+        display.clear() 
+    elif button_a.is_pressed(): 
+        print("A") 
+        sleep(120) 
+    elif button_b.is_pressed(): 
+        print("B") 
+        sleep(120) 
+    sleep(20)</pre> 
+</div> 
+</div>
+
+        <!-- Tab 3: GitHub Pages Setup -->
+        <div id="tab-content-github" class="hidden space-y-3 text-[10px] sm:text-xs">
+            <p class="text-slate-300 font-bold text-yellow-400">🚀 HOW TO HOST THIS GAME ON GITHUB PAGES FOR FREE:</p>
+            <ol class="list-decimal list-inside space-y-2 text-slate-300 leading-relaxed bg-slate-800/80 p-3.5 rounded-xl border border-slate-700">
+                <li>Create a new repository on <a href="https://github.com" target="_blank" class="text-cyan-400 underline">GitHub.com</a> (e.g. <code class="text-yellow-300">mario-microbit-game</code>).</li>
+                <li>Upload this <code class="text-yellow-300">index.html</code> file to the root of your repository.</li>
+                <li>In your GitHub Repository, click on **Settings** ➔ **Pages** (on the left menu).</li>
+                <li>Under **Build and deployment**, set Source to **Deploy from a branch**.</li>
+                <li>Select **Branch: main** (or <code class="text-slate-200">master</code>) and folder <code class="text-slate-200">/(root)</code>, then click **Save**.</li>
+                <li>Wait 1-2 minutes! GitHub will give you a live HTTPS link (e.g. <code class="text-emerald-400">https://yourusername.github.io/mario-microbit-game</code>). Web Serial API requires HTTPS or localhost, which GitHub Pages provides automatically!</li>
+            </ol>
+        </div>
+
+        <div class="mt-6 text-right pt-2 border-t border-slate-800">
+            <button onclick="closeGuideModal()" class="btn-retro bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-2.5 rounded-xl text-xs">
+                GOT IT! LET'S PLAY
+            </button>
         </div>
     </div>
 </div>
 
 <script>
     /* ==========================================================================
-       0. RPG SYSTEM: LEVEL, COINS, UPGRADES
+       0. GAME RPG SYSTEM (LEVELS, BANK, SHOP)
        ========================================================================== */
     let globalCoins = parseInt(localStorage.getItem('mario_global_coins') || '0');
     let playerLevel = parseInt(localStorage.getItem('mario_level') || '1');
     let upgrades = JSON.parse(localStorage.getItem('mario_upgrades') || '{"health":1, "size":1, "jumps":1, "arRun":false}');
     
     let lastScoreLevel = 0; 
-    let sessionCoins = 0;
-    let difficultyMultiplier = 1.5; 
+    let difficultyMultiplier = 1.0; 
 
     function updateRPGUI() {
         document.getElementById('ui-level').textContent = playerLevel;
         document.getElementById('ui-bank').textContent = `🪙 ${globalCoins}`;
         
         let hpString = "";
-        for(let i=0; i<(mario ? mario.health : upgrades.health); i++) hpString += "❤️";
+        for(let i = 0; i < (mario.health !== undefined ? mario.health : upgrades.health); i++) {
+            hpString += "❤️";
+        }
         document.getElementById('ui-hp').textContent = hpString || "💀";
     }
 
@@ -255,15 +493,16 @@
         updateRPGUI();
     }
 
-    // Shop Functions
     function openShopModal() {
         if (gameState === 'PLAYING') return;
         document.getElementById('shop-modal').classList.remove('hidden');
         refreshShopUI();
     }
+
     function closeShopModal() {
         document.getElementById('shop-modal').classList.add('hidden');
     }
+
     function refreshShopUI() {
         document.getElementById('shop-bank').textContent = `🪙 ${globalCoins}`;
         document.getElementById('shop-hp-lvl').textContent = upgrades.health;
@@ -271,6 +510,7 @@
         document.getElementById('shop-jump-lvl').textContent = upgrades.jumps;
         document.getElementById('shop-ar-lvl').textContent = upgrades.arRun ? "YES" : "NO";
     }
+
     function buyUpgrade(type, cost) {
         if (globalCoins >= cost) {
             let success = false;
@@ -293,9 +533,10 @@
     }
 
     function toggleDifficultyList() {
-        if (gameState === 'PLAYING') return; 
+        if (gameState === 'PLAYING') return; // Double protection
         document.getElementById('difficulty-list').classList.toggle('hidden');
     }
+
     function setDifficulty(multiplier, name) {
         difficultyMultiplier = multiplier;
         const btn = document.getElementById('difficulty-btn');
@@ -304,7 +545,7 @@
     }
 
     /* ==========================================================================
-       1. AUDIO ENGINE
+       1. RETRO SYNTHESIZED AUDIO ENGINE (Web Audio API)
        ========================================================================== */
     let audioCtx = null;
     let soundMuted = false;
@@ -317,47 +558,102 @@
         }
         if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     }
+
     function toggleAudio() {
         soundMuted = !soundMuted;
-        if (soundMuted && bgmInterval) { clearInterval(bgmInterval); bgmInterval = null; } 
-        else if (!soundMuted && gameState === 'PLAYING') startBGM();
+        document.getElementById('audio-icon').textContent = soundMuted ? '🔇' : '🔊';
+        if (soundMuted && bgmInterval) {
+            clearInterval(bgmInterval);
+            bgmInterval = null;
+        } else if (!soundMuted && gameState === 'PLAYING') {
+            startBGM();
+        }
     }
+
     function playSound(type) {
-        if (soundMuted || !audioCtx) return;
+        if (soundMuted) return;
+        initAudio();
+        if (!audioCtx) return;
+
         const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
 
         if (type === 'jump') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
             osc.type = 'square';
             osc.frequency.setValueAtTime(150, now);
             osc.frequency.exponentialRampToValueAtTime(650, now + 0.16);
             gain.gain.setValueAtTime(0.18, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.16);
+            osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(now); osc.stop(now + 0.16);
-        } else if (type === 'hit' || type === 'hurt') {
+        } 
+        else if (type === 'stomp') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(type==='hurt'? 200 : 140, now);
+            osc.frequency.setValueAtTime(320, now);
+            osc.frequency.exponentialRampToValueAtTime(80, now + 0.12);
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(now); osc.stop(now + 0.12);
+        }
+        else if (type === 'coin' || type === 'levelup') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(type === 'levelup' ? 1318 : 987.77, now);
+            osc.frequency.setValueAtTime(type === 'levelup' ? 1567 : 1318.51, now + 0.08); 
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + (type === 'levelup' ? 0.5 : 0.3));
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(now); osc.stop(now + (type === 'levelup' ? 0.5 : 0.3));
+        } 
+        else if (type === 'bump') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(220, now);
+            osc.frequency.linearRampToValueAtTime(110, now + 0.1);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(now); osc.stop(now + 0.1);
+        }
+        else if (type === 'hit' || type === 'hurt') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(type === 'hurt' ? 200 : 140, now);
             osc.frequency.linearRampToValueAtTime(30, now + 0.25);
             gain.gain.setValueAtTime(0.3, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+            osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(now); osc.stop(now + 0.25);
-        } else if (type === 'coin' || type === 'levelup') {
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(type==='levelup'? 1318 : 987.77, now);
-            osc.frequency.setValueAtTime(type==='levelup'? 1567 : 1318.51, now + 0.08);
-            gain.gain.setValueAtTime(0.2, now);
-            gain.gain.linearRampToValueAtTime(0.01, now + (type==='levelup'? 0.5 : 0.3));
-            osc.start(now); osc.stop(now + (type==='levelup'? 0.5 : 0.3));
+        } 
+        else if (type === 'gameover') {
+            const notes = [380, 320, 260, 200, 160, 120];
+            notes.forEach((freq, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, now + idx * 0.11);
+                gain.gain.setValueAtTime(0.2, now + idx * 0.11);
+                gain.gain.linearRampToValueAtTime(0.01, now + (idx + 1) * 0.11);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(now + idx * 0.11); osc.stop(now + (idx + 1) * 0.11);
+            });
         }
     }
+
     function startBGM() {
         if (bgmInterval) clearInterval(bgmInterval);
         if (soundMuted) return;
+
         const bgmNotes = [261.63, 261.63, 0, 261.63, 0, 207.65, 261.63, 0, 329.63, 0, 0, 0, 164.81, 0, 0, 0];
         let noteIdx = 0;
+
         bgmInterval = setInterval(() => {
             if (gameState !== 'PLAYING' || soundMuted || !audioCtx) return;
             const freq = bgmNotes[noteIdx];
@@ -375,81 +671,253 @@
             noteIdx = (noteIdx + 1) % bgmNotes.length;
         }, 145);
     }
-    function stopBGM() { if (bgmInterval) clearInterval(bgmInterval); bgmInterval = null; }
+
+    function stopBGM() {
+        if (bgmInterval) {
+            clearInterval(bgmInterval);
+            bgmInterval = null;
+        }
+    }
 
     /* ==========================================================================
-       2. GAME ENGINE & CANVAS
+       2. MICRO:BIT WEB SERIAL API CONTROLLER
+       ========================================================================== */
+    let serialPort = null;
+    let serialReader = null;
+    let isConnected = false;
+
+    async function toggleSerialConnection() {
+        initAudio();
+        if (!("serial" in navigator)) {
+            logSerialMessage("Web Serial API is not supported in this browser.", "error");
+            document.getElementById('status-text').textContent = "NOT SUPPORTED";
+            return;
+        }
+
+        if (isConnected) {
+            await disconnectSerial();
+        } else {
+            await connectSerial();
+        }
+    }
+
+    async function connectSerial() {
+        try {
+            serialPort = await navigator.serial.requestPort();
+            await serialPort.open({ baudRate: 115200 });
+
+            isConnected = true;
+            updateSerialUI(true);
+            logSerialMessage("Connected to micro:bit at 115200 baud!");
+
+            readSerialLoop();
+        } catch (err) {
+            console.error("Serial connection error:", err);
+            logSerialMessage("Connection failed: " + err.message, "error");
+            updateSerialUI(false);
+        }
+    }
+
+    async function disconnectSerial() {
+        try {
+            if (serialReader) { await serialReader.cancel(); serialReader = null; }
+            if (serialPort) { await serialPort.close(); serialPort = null; }
+        } catch (e) {
+            console.error("Disconnect error:", e);
+        } finally {
+            isConnected = false;
+            updateSerialUI(false);
+            logSerialMessage("Disconnected from micro:bit.");
+        }
+    }
+
+    async function readSerialLoop() {
+        const textDecoder = new TextDecoderStream();
+        const readableStreamClosed = serialPort.readable.pipeTo(textDecoder.writable);
+        serialReader = textDecoder.readable.getReader();
+
+        let buffer = "";
+
+        try {
+            while (true) {
+                const { value, done } = await serialReader.read();
+                if (done) break;
+
+                buffer += value;
+                let lines = buffer.split("\n");
+                buffer = lines.pop();
+
+                for (let line of lines) {
+                    line = line.trim().toUpperCase();
+                    if (line.length > 0) {
+                        processSerialSignal(line);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Serial stream read error:", error);
+        } finally {
+            serialReader.releaseLock();
+        }
+    }
+
+    function processSerialSignal(rawSignal) {
+        logSerialMessage("RX DATA: [" + rawSignal + "]");
+
+        const telemetryLed = document.getElementById('telemetry-led');
+        telemetryLed.className = "w-2.5 h-2.5 rounded-full bg-yellow-400 led-pulse";
+        setTimeout(() => {
+            telemetryLed.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+        }, 180);
+
+        if (rawSignal.includes("A+B") || rawSignal.includes("AB") || rawSignal.includes("JUMP") || rawSignal === "1" || rawSignal === "A") {
+            triggerJump("MICRO:BIT [" + rawSignal + "]");
+        } else if (rawSignal.includes("B") || rawSignal.includes("CROUCH")) {
+            triggerCrouch("MICRO:BIT [" + rawSignal + "]");
+        }
+    }
+
+    function updateSerialUI(connected) {
+        const led = document.getElementById('status-led');
+        const text = document.getElementById('status-text');
+        const btn = document.getElementById('connect-btn');
+
+        if (connected) {
+            led.className = "w-3 h-3 rounded-full bg-emerald-400 led-pulse inline-block";
+            text.textContent = "CONNECTED (115200)";
+            text.className = "text-emerald-400 font-bold";
+            btn.innerHTML = `DISCONNECT`;
+            btn.className = "btn-retro bg-red-600 hover:bg-red-500 text-white font-bold px-3 py-2.5 rounded-xl text-[9px] sm:text-[10px] flex items-center gap-1.5 cursor-pointer";
+        } else {
+            led.className = "w-3 h-3 rounded-full bg-red-500 inline-block";
+            text.textContent = "DISCONNECTED";
+            text.className = "text-slate-300";
+            btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> CONNECT MICRO:BIT`;
+            btn.className = "btn-retro btn-green-retro bg-green-600 hover:bg-green-500 text-white font-bold px-3 py-2.5 rounded-xl text-[9px] sm:text-[10px] flex items-center gap-1.5 cursor-pointer";
+        }
+    }
+
+    function logSerialMessage(msg, type = "normal") {
+        const logBox = document.getElementById('serial-log');
+        const timeStr = new Date().toLocaleTimeString().split(' ')[0];
+        const div = document.createElement('div');
+
+        if (type === "error") {
+            div.className = "text-red-400 font-mono";
+        } else if (msg.includes("A+B") || msg.includes("JUMP")) {
+            div.className = "text-yellow-300 font-bold font-mono";
+        } else {
+            div.className = "text-emerald-400 font-mono";
+        }
+
+        div.textContent = `[${timeStr}] ${msg}`;
+        logBox.appendChild(div);
+        logBox.scrollTop = logBox.scrollHeight;
+
+        document.getElementById('last-signal-time').textContent = timeStr;
+    }
+
+    /* ==========================================================================
+       3. GAME ENGINE & HIGH-FPS DELTA TIME CANVAS GRAPHICS ENGINE
        ========================================================================== */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d', { alpha: false });
+
     const CANVAS_WIDTH = 800;
     const CANVAS_HEIGHT = 450;
     canvas.width = CANVAS_WIDTH;
     canvas.height = CANVAS_HEIGHT;
+
     const GROUND_Y = 370;
     const GRAVITY = 0.65;
 
     let gameState = 'START';
     let score = 0;
+    let coins = 0;
+    let highscore = parseInt(localStorage.getItem('mario_microbit_highscore') || '0');
     let gameSpeed = 5.0;
     let distance = 0;
     let animFrameId = null;
-    let lastTime = 0, frameCount = 0, fpsTimer = 0, currentFps = 60;
+
+    // High FPS Delta-Time & Frame Counter variables
+    let lastTime = 0;
+    let frameCount = 0;
+    let fpsTimer = 0;
+    let currentFps = 60;
+
+    document.getElementById('ui-highscore').textContent = String(highscore).padStart(6, '0');
+    updateRPGUI();
 
     const mario = {
         x: 100,
-        y: 0,
-        baseWidth: 36,
-        baseHeight: 50,
+        y: GROUND_Y - 50,
         width: 36,
         height: 50,
+        normalHeight: 50,
         crouchHeight: 30,
         vy: 0,
+        
+        // Upgrades Integration Variables
         jumpsDone: 0,
-        isCrouching: false,
-        runFrame: 0,
-        animTimer: 0,
         health: 1,
         invincibleTimer: 0,
 
+        isJumping: false,
+        isCrouching: false,
+        runFrame: 0,
+        animTimer: 0,
+
         jump() {
             if (this.jumpsDone < upgrades.jumps) {
-                this.vy = -13.5 - (this.jumpsDone * 1.5); // Extra jumps are slightly stronger
+                // Multi jumps are slightly less powerful to keep it balanced
+                this.vy = -14.5 - (this.jumpsDone * 1.2); 
+                this.isJumping = true;
                 this.jumpsDone++;
                 this.isCrouching = false;
                 playSound('jump');
-                createDustParticles(this.x + this.width / 2, this.y + this.height);
+                createDustParticles(this.x + this.width / 2, GROUND_Y);
             }
         },
+
         stompBounce() {
             this.vy = -9.5;
-            this.jumpsDone = 1; // Allows 1 extra double jump after a stomp if unlocked
+            this.isJumping = true;
+            this.jumpsDone = 1; // Allow double jumping after stomp!
+            playSound('stomp');
         },
+
         crouch() {
-            if (this.jumpsDone === 0) this.isCrouching = true;
-            else this.vy += 6.0; // Fast drop
+            if (this.jumpsDone === 0) {
+                this.isCrouching = true;
+            } else {
+                this.vy += 6.0; // Fast drop if in mid-air
+            }
         },
-        uncrouch() { this.isCrouching = false; },
+
+        uncrouch() {
+            this.isCrouching = false;
+        },
 
         update(dt = 1) {
-            // Apply scale logic to hitboxes
-            this.width = this.baseWidth * upgrades.size;
-            let currentBaseHeight = this.isCrouching && this.jumpsDone === 0 ? this.crouchHeight : this.baseHeight;
-            this.height = currentBaseHeight * upgrades.size;
+            // Apply scale logic to hitboxes based on Size Upgrade
+            let baseH = (this.isCrouching && this.jumpsDone === 0) ? this.crouchHeight : this.normalHeight;
+            this.height = baseH * upgrades.size;
+            this.width = 36 * upgrades.size;
 
-            if (this.invincibleTimer > 0) this.invincibleTimer -= dt * 16.66; // approx ms
+            if (this.invincibleTimer > 0) this.invincibleTimer -= dt * (1000/60); // approx ms
 
+            // High FPS Physics Delta Time Scaling
             this.vy += GRAVITY * dt;
             this.y += this.vy * dt;
 
-            // Floor collision
             if (this.y >= GROUND_Y - this.height) {
                 this.y = GROUND_Y - this.height;
                 this.vy = 0;
-                this.jumpsDone = 0;
+                this.isJumping = false;
+                this.jumpsDone = 0; // Reset jumps when touching ground
             }
 
-            this.animTimer += dt * (gameSpeed / 5.0);
+            this.animTimer += dt;
             if (this.animTimer >= 5) {
                 this.runFrame = (this.runFrame + 1) % 3;
                 this.animTimer = 0;
@@ -457,33 +925,40 @@
         },
 
         draw() {
-            // Invincibility flashing
+            ctx.save();
+            
+            // Invincibility Flashing logic
             if (this.invincibleTimer > 0 && Math.floor(this.invincibleTimer / 100) % 2 === 0) {
                 ctx.globalAlpha = 0.3;
             }
 
-            ctx.save();
-            // Translate to grounded position, then scale up from bottom-left essentially
-            ctx.translate(this.x, this.y + this.height); 
+            // Draw Mario scaled correctly up from the bottom-left
+            ctx.translate(this.x, this.y + this.height);
             ctx.scale(upgrades.size, upgrades.size);
-            ctx.translate(0, -currentBaseHeight(this)); 
+            ctx.translate(0, - (this.isCrouching && this.jumpsDone === 0 ? this.crouchHeight : this.normalHeight));
 
-            const redCap = '#E52521', blueOveralls = '#0022F2', skinTone = '#FCC082', brownShoes = '#6B3E08', yellowBtns = '#FCE021';
+            const redCap = '#E52521';
+            const blueOveralls = '#0022F2';
+            const skinTone = '#FCC082';
+            const brownShoes = '#6B3E08';
+            const yellowButtons = '#FCE021';
 
             if (this.isCrouching && this.jumpsDone === 0) {
                 ctx.fillStyle = redCap; ctx.fillRect(4, 0, 28, 8);
                 ctx.fillStyle = skinTone; ctx.fillRect(6, 8, 22, 8);
                 ctx.fillStyle = blueOveralls; ctx.fillRect(4, 16, 26, 10);
                 ctx.fillStyle = brownShoes; ctx.fillRect(2, 22, 30, 8);
-            } else if (this.jumpsDone > 0) { // Jumping
+            } 
+            else if (this.jumpsDone > 0) { // Using jumpsDone for "is jumping" drawing check
                 ctx.fillStyle = redCap; ctx.fillRect(6, 0, 24, 10); ctx.fillRect(10, -4, 16, 6);
                 ctx.fillStyle = skinTone; ctx.fillRect(8, 10, 20, 12);
                 ctx.fillStyle = '#000'; ctx.fillRect(22, 12, 4, 6); ctx.fillRect(24, 16, 8, 6);
                 ctx.fillStyle = blueOveralls; ctx.fillRect(6, 22, 22, 18);
                 ctx.fillStyle = redCap; ctx.fillRect(24, 14, 10, 8);
-                ctx.fillStyle = yellowBtns; ctx.fillRect(20, 26, 4, 4);
+                ctx.fillStyle = yellowButtons; ctx.fillRect(20, 26, 4, 4);
                 ctx.fillStyle = brownShoes; ctx.fillRect(2, 40, 14, 10); ctx.fillRect(20, 36, 14, 10);
-            } else { // Running
+            } 
+            else {
                 ctx.fillStyle = redCap; ctx.fillRect(6, 2, 24, 10); ctx.fillRect(12, 0, 16, 4);
                 ctx.fillStyle = skinTone; ctx.fillRect(8, 12, 20, 10);
                 ctx.fillStyle = '#000'; ctx.fillRect(22, 13, 4, 5);
@@ -491,54 +966,94 @@
                 ctx.fillStyle = brownShoes; ctx.fillRect(18, 20, 12, 4);
                 ctx.fillStyle = redCap; ctx.fillRect(6, 22, 20, 8);
                 ctx.fillStyle = blueOveralls; ctx.fillRect(8, 28, 18, 12);
-                ctx.fillStyle = yellowBtns; ctx.fillRect(20, 30, 4, 4);
+                ctx.fillStyle = yellowButtons; ctx.fillRect(20, 30, 4, 4);
                 ctx.fillStyle = brownShoes;
                 if (this.runFrame === 0) { ctx.fillRect(4, 40, 12, 10); ctx.fillRect(18, 40, 12, 10); } 
                 else if (this.runFrame === 1) { ctx.fillRect(0, 38, 14, 12); ctx.fillRect(22, 42, 12, 8); } 
                 else { ctx.fillRect(22, 38, 14, 12); ctx.fillRect(2, 42, 12, 8); }
             }
+
             ctx.restore();
             ctx.globalAlpha = 1.0;
         }
     };
 
-    function currentBaseHeight(m) {
-        return (m.isCrouching && m.jumpsDone === 0) ? m.crouchHeight : m.baseHeight;
-    }
+    let obstacles = [];
+    let coinsList = [];
+    let questionBlocks = [];
+    let particles = [];
+    let scorePopups = [];
+    let clouds = [];
+    let hills = [];
 
-    let obstacles = [], coinsList = [], questionBlocks = [], particles = [], scorePopups = [], clouds = [], hills = [];
-    let obstacleSpawnTimer = 0, coinSpawnTimer = 0;
+    let obstacleSpawnTimer = 0;
+    let coinSpawnTimer = 0;
 
     function initParallax() {
-        clouds = []; hills = [];
-        for (let i = 0; i < 5; i++) clouds.push({ x: Math.random() * CANVAS_WIDTH, y: 25 + Math.random() * 90, size: 28 + Math.random() * 28, speed: 0.4 + Math.random() * 0.4 });
-        for (let i = 0; i < 3; i++) hills.push({ x: i * 320, width: 180 + Math.random() * 120, height: 55 + Math.random() * 35 });
+        clouds = [];
+        hills = [];
+        for (let i = 0; i < 5; i++) {
+            clouds.push({ x: Math.random() * CANVAS_WIDTH, y: 25 + Math.random() * 90, size: 28 + Math.random() * 28, speed: 0.4 + Math.random() * 0.4 });
+        }
+        for (let i = 0; i < 3; i++) {
+            hills.push({ x: i * 320, width: 180 + Math.random() * 120, height: 55 + Math.random() * 35 });
+        }
+    }
+
+    function triggerJump(source = "KEYBOARD") {
+        initAudio();
+        if (gameState === 'START' || gameState === 'GAMEOVER') {
+            startGame();
+        } else if (gameState === 'PLAYING') {
+            mario.jump();
+        }
+        logSerialMessage("JUMP TRIGGERED VIA " + source);
+    }
+
+    function triggerCrouch(source = "KEYBOARD") {
+        initAudio();
+        if (gameState === 'PLAYING') {
+            mario.crouch();
+        }
+        logSerialMessage("CROUCH TRIGGERED VIA " + source);
     }
 
     function spawnObstacle() {
         const rand = Math.random();
-        if (rand < 0.45) obstacles.push({ type: 'goomba', x: CANVAS_WIDTH + 20, y: GROUND_Y - 34, width: 36, height: 34, squished: false, squishTimer: 0 });
-        else if (rand < 0.75) {
+
+        if (rand < 0.45) {
+            obstacles.push({ type: 'goomba', x: CANVAS_WIDTH + 20, y: GROUND_Y - 34, width: 36, height: 34, squished: false, squishTimer: 0 });
+        } else if (rand < 0.75) {
             const pipeHeight = 45 + Math.floor(Math.random() * 30);
             obstacles.push({ type: 'pipe', x: CANVAS_WIDTH + 20, y: GROUND_Y - pipeHeight, width: 44, height: pipeHeight });
-        } else obstacles.push({ type: 'koopa', x: CANVAS_WIDTH + 20, y: GROUND_Y - 42, width: 34, height: 42 });
+        } else {
+            obstacles.push({ type: 'koopa', x: CANVAS_WIDTH + 20, y: GROUND_Y - 42, width: 34, height: 42, isShell: false });
+        }
     }
 
     function spawnCollectibles() {
         if (Math.random() < 0.55) {
             const startY = GROUND_Y - 90 - Math.random() * 50;
-            for (let i = 0; i < 3; i++) coinsList.push({ x: CANVAS_WIDTH + (i * 32), y: startY, width: 20, height: 24, animTimer: i * 2 });
+            for (let i = 0; i < 3; i++) {
+                coinsList.push({ x: CANVAS_WIDTH + (i * 32), y: startY, width: 20, height: 24, animTimer: i * 2 });
+            }
         } else {
             questionBlocks.push({ x: CANVAS_WIDTH + 20, y: GROUND_Y - 115, width: 34, height: 34, hit: false, bounceY: 0 });
         }
     }
 
     function createDustParticles(x, y) {
-        for (let i = 0; i < 6; i++) particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 4, vy: -Math.random() * 3, size: 3 + Math.random() * 3, life: 1.0, color: '#e2e8f0' });
+        for (let i = 0; i < 6; i++) {
+            particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 4, vy: -Math.random() * 3, size: 3 + Math.random() * 3, life: 1.0, color: '#e2e8f0' });
+        }
     }
+
     function createSparkles(x, y) {
-        for (let i = 0; i < 8; i++) particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, size: 4, life: 1.0, color: '#facc15' });
+        for (let i = 0; i < 8; i++) {
+            particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, size: 4, life: 1.0, color: '#facc15' });
+        }
     }
+
     function addScorePopup(text, x, y, color = "#facc15") {
         scorePopups.push({ text: text, x: x, y: y, vy: -1.5, life: 1.0, color: color });
     }
@@ -550,15 +1065,19 @@
 
         ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
         clouds.forEach(c => {
-            c.x -= c.speed * dt * Math.max(1, difficultyMultiplier);
+            c.x -= c.speed * dt * (difficultyMultiplier >= 1 ? difficultyMultiplier : 1);
             if (c.x + c.size * 2 < 0) c.x = CANVAS_WIDTH + 50;
-            ctx.beginPath(); ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2); ctx.arc(c.x + c.size * 0.7, c.y - c.size * 0.3, c.size * 0.8, 0, Math.PI * 2); ctx.arc(c.x + c.size * 1.4, c.y, c.size * 0.7, 0, Math.PI * 2); ctx.fill();
+
+            ctx.beginPath(); ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
+            ctx.arc(c.x + c.size * 0.7, c.y - c.size * 0.3, c.size * 0.8, 0, Math.PI * 2);
+            ctx.arc(c.x + c.size * 1.4, c.y, c.size * 0.7, 0, Math.PI * 2); ctx.fill();
         });
 
         ctx.fillStyle = '#00a800';
         hills.forEach(h => {
             h.x -= gameSpeed * 0.22 * dt;
             if (h.x + h.width < 0) h.x = CANVAS_WIDTH + Math.random() * 100;
+
             ctx.beginPath(); ctx.ellipse(h.x + h.width / 2, GROUND_Y, h.width / 2, h.height, 0, Math.PI, 0); ctx.fill();
             ctx.strokeStyle = '#006800'; ctx.lineWidth = 3; ctx.stroke();
         });
@@ -569,54 +1088,56 @@
 
         ctx.strokeStyle = '#000000'; ctx.lineWidth = 2;
         const brickW = 32; const offsetX = (distance * gameSpeed) % brickW;
+
         for (let x = -offsetX; x < CANVAS_WIDTH + brickW; x += brickW) {
             ctx.beginPath(); ctx.moveTo(x, GROUND_Y + 12); ctx.lineTo(x, CANVAS_HEIGHT); ctx.stroke();
         }
     }
 
-    function checkCollision(rect1, rect2) {
-        const p = 6; // Padding
-        return (rect1.x + p < rect2.x + rect2.width && rect1.x + rect1.width - p > rect2.x && rect1.y + p < rect2.y + rect2.height && rect1.y + rect1.height - p > rect2.y);
-    }
-
+    // Health Damage Function
     function handlePlayerHit(obs) {
-        if (mario.invincibleTimer > 0) return; // Skip if invincible
+        if (mario.invincibleTimer > 0) return false; // Ignore hit
 
         if (mario.health > 1) {
             mario.health--;
-            mario.invincibleTimer = 2000; // 2 seconds
+            mario.invincibleTimer = 2000;
             playSound('hurt');
             addScorePopup("-1 HP!", mario.x, mario.y - 20, "#ef4444");
             updateRPGUI();
+            return false;
         } else {
             mario.health = 0;
             updateRPGUI();
             gameOver();
+            return true;
         }
     }
 
     function updateGame(dt = 1) {
         if (gameState !== 'PLAYING') return;
+
         distance += 0.1 * dt;
         
         // --- AR RUN SPEED SYNC LOGIC ---
         let baseSpeed = 5.0 + Math.min(6.5, distance * 0.005);
         if (upgrades.arRun && arActive) {
             if (isUserRunningAR) {
-                gameSpeed = baseSpeed * difficultyMultiplier * 1.3; // Boosted speed!
+                gameSpeed = baseSpeed * difficultyMultiplier * 1.35; // Run fast
             } else {
-                gameSpeed = baseSpeed * difficultyMultiplier * 0.2; // Slow crawl
+                gameSpeed = baseSpeed * difficultyMultiplier * 0.4; // Slow crawl when idle
             }
         } else {
             gameSpeed = baseSpeed * difficultyMultiplier;
         }
         
-        score = Math.floor(distance * 10) + (sessionCoins * 100);
-        document.getElementById('ui-score').textContent = score;
+        score = Math.floor(distance * 10) + (coins * 100);
+
+        document.getElementById('ui-score').textContent = String(score).padStart(6, '0');
+        document.getElementById('ui-coins').textContent = `🪙 ${coins}`;
         document.getElementById('ui-speed').textContent = `${(gameSpeed / 5.0).toFixed(1)}x`;
 
         // RPG Level Up Logic
-        let currentScoreLevel = Math.floor(score / 1500);
+        let currentScoreLevel = Math.floor(score / 1000);
         if (currentScoreLevel > lastScoreLevel) {
             playerLevel++;
             globalCoins += 50;
@@ -628,16 +1149,15 @@
 
         mario.update(dt);
 
-        obstacleSpawnTimer += dt * (gameSpeed / 5.0);
-        if (obstacleSpawnTimer > 105 / difficultyMultiplier) {
+        obstacleSpawnTimer += dt;
+        if (obstacleSpawnTimer > (105 - Math.min(45, baseSpeed * 4.5)) / difficultyMultiplier) {
             spawnObstacle(); obstacleSpawnTimer = 0;
         }
-        coinSpawnTimer += dt * (gameSpeed / 5.0);
+        coinSpawnTimer += dt;
         if (coinSpawnTimer > 150 / difficultyMultiplier) {
             spawnCollectibles(); coinSpawnTimer = 0;
         }
 
-        // Entities
         for (let i = obstacles.length - 1; i >= 0; i--) {
             const obs = obstacles[i];
             obs.x -= gameSpeed * dt;
@@ -649,19 +1169,21 @@
                     if (obs.squishTimer > 15) obstacles.splice(i, 1);
                     continue;
                 }
+
                 ctx.fillStyle = '#9A3A00'; ctx.fillRect(obs.x + 4, obs.y + 4, obs.width - 8, obs.height - 8);
                 ctx.fillStyle = '#FCC082'; ctx.fillRect(obs.x + 8, obs.y, obs.width - 16, 8);
                 ctx.fillStyle = '#FFF'; ctx.fillRect(obs.x + 6, obs.y + 12, 8, 10); ctx.fillRect(obs.x + 22, obs.y + 12, 8, 10);
                 ctx.fillStyle = '#000'; ctx.fillRect(obs.x + 10, obs.y + 14, 4, 6); ctx.fillRect(obs.x + 22, obs.y + 14, 4, 6);
 
                 if (checkCollision(mario, obs)) {
-                    if (mario.vy > 0 && (mario.y + mario.height - mario.vy) <= obs.y + 16) {
+                    // Adjusted collision box slightly for stomping larger versions of mario correctly
+                    if (mario.vy > 0 && (mario.y + mario.height - mario.vy) <= obs.y + 18) {
                         obs.squished = true; mario.stompBounce(); score += 200;
                         addScorePopup("+200 STOMP!", obs.x, obs.y, "#22c55e");
                     } else {
-                        handlePlayerHit(obs);
-                        if(mario.invincibleTimer > 0) obstacles.splice(i, 1); // destroy if survived
-                        if(gameState === 'GAMEOVER') return;
+                        let died = handlePlayerHit(obs);
+                        if (!died) obstacles.splice(i, 1); // Remove obstacle if survived via Health
+                        if (gameState === 'GAMEOVER') return;
                     }
                 }
             } 
@@ -673,8 +1195,8 @@
                 ctx.strokeStyle = '#000'; ctx.strokeRect(obs.x - 4, obs.y, obs.width + 8, 16);
 
                 if (checkCollision(mario, obs)) {
-                    handlePlayerHit(obs);
-                    if(gameState === 'GAMEOVER') return;
+                    let died = handlePlayerHit(obs);
+                    if (gameState === 'GAMEOVER') return;
                 }
             } 
             else if (obs.type === 'koopa') {
@@ -682,13 +1204,13 @@
                 ctx.fillStyle = '#FCC082'; ctx.fillRect(obs.x + 12, obs.y + 20, 16, 18);
 
                 if (checkCollision(mario, obs)) {
-                    if (mario.vy > 0 && (mario.y + mario.height - mario.vy) <= obs.y + 18) {
+                    if (mario.vy > 0 && (mario.y + mario.height - mario.vy) <= obs.y + 20) {
                         mario.stompBounce(); score += 300; addScorePopup("+300 KOOPA!", obs.x, obs.y, "#38bdf8");
                         obstacles.splice(i, 1); continue;
                     } else {
-                        handlePlayerHit(obs);
-                        if(mario.invincibleTimer > 0) obstacles.splice(i, 1); 
-                        if(gameState === 'GAMEOVER') return;
+                        let died = handlePlayerHit(obs);
+                        if (!died) obstacles.splice(i, 1);
+                        if (gameState === 'GAMEOVER') return;
                     }
                 }
             }
@@ -706,7 +1228,7 @@
             ctx.strokeStyle = '#C88000'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
 
             if (checkCollision(mario, coin)) {
-                sessionCoins++; globalCoins++; 
+                coins++; globalCoins++; 
                 playSound('coin'); createSparkles(coin.x, coin.y); addScorePopup("+1 🪙", coin.x, coin.y, "#facc15");
                 saveRPGData();
                 coinsList.splice(i, 1); continue;
@@ -725,7 +1247,7 @@
                 ctx.fillStyle = '#8A4000'; ctx.font = '16px "Press Start 2P"'; ctx.fillText('?', qb.x + 9, qb.y + 24);
                 if (mario.jumpsDone > 0 && mario.vy < 0 && checkCollision(mario, qb)) {
                     qb.hit = true; qb.bounceY = -12; setTimeout(() => qb.bounceY = 0, 100);
-                    sessionCoins += 2; globalCoins += 2; playSound('coin'); createSparkles(qb.x + 17, qb.y - 12);
+                    coins += 2; globalCoins += 2; playSound('bump'); playSound('coin'); createSparkles(qb.x + 17, qb.y - 12);
                     addScorePopup("+2 🪙", qb.x, qb.y - 20, "#eab308");
                     saveRPGData();
                 }
@@ -741,6 +1263,25 @@
         }
     }
 
+    function checkCollision(rect1, rect2) {
+        const padding = 6;
+        return (
+            rect1.x + padding < rect2.x + rect2.width &&
+            rect1.x + rect1.width - padding > rect2.x &&
+            rect1.y + padding < rect2.y + rect2.height &&
+            rect1.y + rect1.height - padding > rect2.y
+        );
+    }
+
+    function updateAndDrawParticles(dt = 1) {
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx * dt; p.y += p.vy * dt; p.life -= 0.04 * dt;
+            if (p.life <= 0) { particles.splice(i, 1); continue; }
+            ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.fillRect(p.x, p.y, p.size, p.size); ctx.globalAlpha = 1.0;
+        }
+    }
+
     function gameLoop(timestamp) {
         if (!lastTime) lastTime = timestamp;
         let deltaMs = timestamp - lastTime; lastTime = timestamp;
@@ -750,7 +1291,7 @@
         frameCount++; fpsTimer += deltaMs;
         if (fpsTimer >= 500) {
             currentFps = Math.round((frameCount * 1000) / fpsTimer);
-            // document.getElementById('ui-fps').textContent = currentFps; // Can re-enable
+            document.getElementById('ui-fps').textContent = currentFps;
             frameCount = 0; fpsTimer = 0;
         }
 
@@ -758,13 +1299,7 @@
         drawBackground(dt);
         mario.draw();
         updateGame(dt);
-        
-        // draw particles
-        for (let i = particles.length - 1; i >= 0; i--) {
-            const p = particles[i]; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= 0.04 * dt;
-            if (p.life <= 0) { particles.splice(i, 1); continue; }
-            ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.fillRect(p.x, p.y, p.size, p.size); ctx.globalAlpha = 1.0;
-        }
+        updateAndDrawParticles(dt);
 
         animFrameId = requestAnimationFrame(gameLoop);
     }
@@ -772,22 +1307,28 @@
     function startGame() {
         initAudio();
         gameState = 'PLAYING';
-        score = 0; sessionCoins = 0; distance = 0; lastScoreLevel = 0;
+        score = 0;
+        coins = 0;
+        distance = 0;
+        lastScoreLevel = 0;
         lastTime = performance.now();
         
-        mario.health = upgrades.health; // Apply shop health
+        mario.health = upgrades.health;
         mario.invincibleTimer = 0;
         updateRPGUI();
 
         document.getElementById('difficulty-btn').disabled = true;
+        document.getElementById('difficulty-list').classList.add('hidden'); 
+
         obstacles = []; coinsList = []; questionBlocks = []; particles = []; scorePopups = [];
 
-        mario.y = GROUND_Y - (mario.baseHeight * upgrades.size);
+        mario.y = GROUND_Y - (mario.normalHeight * upgrades.size);
         mario.vy = 0; mario.jumpsDone = 0; mario.isCrouching = false;
 
         initParallax();
         document.getElementById('start-overlay').classList.add('hidden');
         document.getElementById('gameover-overlay').classList.add('hidden');
+        document.getElementById('pause-overlay').classList.add('hidden');
         startBGM();
 
         if (!animFrameId) gameLoop(performance.now());
@@ -796,39 +1337,109 @@
     function gameOver() {
         gameState = 'GAMEOVER';
         document.getElementById('difficulty-btn').disabled = false;
-        playSound('hit'); stopBGM();
         
-        saveRPGData(); // Save global coins from session
+        playSound('hit');
+        setTimeout(() => playSound('gameover'), 180);
+        stopBGM();
+        saveRPGData();
+
+        if (score > highscore) {
+            highscore = score;
+            localStorage.setItem('mario_microbit_highscore', highscore.toString());
+            document.getElementById('ui-highscore').textContent = String(highscore).padStart(6, '0');
+        }
 
         document.getElementById('final-score').textContent = score;
-        document.getElementById('final-coins').textContent = `+${sessionCoins} 🪙`;
-        document.getElementById('final-level').textContent = playerLevel;
+        document.getElementById('final-coins').textContent = coins;
+        document.getElementById('final-highscore').textContent = highscore;
         document.getElementById('gameover-overlay').classList.remove('hidden');
     }
 
+    function togglePause() {
+        if (gameState === 'PLAYING') {
+            gameState = 'PAUSED';
+            stopBGM();
+            document.getElementById('pause-overlay').classList.remove('hidden');
+        } else if (gameState === 'PAUSED') {
+            gameState = 'PLAYING';
+            startBGM();
+            document.getElementById('pause-overlay').classList.add('hidden');
+        }
+    }
+
+    function handleCanvasClick() {
+        if (gameState === 'PLAYING') triggerJump("CANVAS_TAP");
+    }
+
     /* ==========================================================================
-       4. INPUTS
+       4. KEYBOARD & UI MODAL LISTENERS
        ========================================================================== */
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') { e.preventDefault(); triggerJump("KEY"); } 
-        else if (e.code === 'ArrowDown' || e.code === 'KeyS') { e.preventDefault(); triggerCrouch("KEY"); } 
+        if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+            e.preventDefault(); triggerJump("KEY_[" + e.code + "]");
+        } else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+            e.preventDefault(); triggerCrouch("KEY_[" + e.code + "]");
+        } else if (e.code === 'KeyP' || e.code === 'Escape') {
+            togglePause();
+        }
     });
-    window.addEventListener('keyup', (e) => { if (e.code === 'ArrowDown' || e.code === 'KeyS') mario.uncrouch(); });
-    function triggerJump() { initAudio(); if (gameState === 'START' || gameState === 'GAMEOVER') startGame(); else if (gameState === 'PLAYING') mario.jump(); }
-    function triggerCrouch() { initAudio(); if (gameState === 'PLAYING') mario.crouch(); }
-    function handleCanvasClick() { if (gameState === 'PLAYING') triggerJump(); }
+
+    window.addEventListener('keyup', (e) => {
+        if (e.code === 'ArrowDown' || e.code === 'KeyS') mario.uncrouch();
+    });
+
+    function openGuideModal() { document.getElementById('guide-modal').classList.remove('hidden'); }
+    function closeGuideModal() { document.getElementById('guide-modal').classList.add('hidden'); }
+
+    function switchModalTab(tab) {
+        document.getElementById('tab-content-makecode').classList.add('hidden');
+        document.getElementById('tab-content-python').classList.add('hidden');
+        document.getElementById('tab-content-github').classList.add('hidden');
+        document.getElementById('tab-btn-makecode').className = "px-3 py-2 bg-slate-800 text-slate-300 font-bold rounded-t-lg";
+        document.getElementById('tab-btn-python').className = "px-3 py-2 bg-slate-800 text-slate-300 font-bold rounded-t-lg";
+        document.getElementById('tab-btn-github').className = "px-3 py-2 bg-slate-800 text-slate-300 font-bold rounded-t-lg";
+
+        if (tab === 'makecode') {
+            document.getElementById('tab-content-makecode').classList.remove('hidden');
+            document.getElementById('tab-btn-makecode').className = "px-3 py-2 bg-amber-500 text-slate-950 font-bold rounded-t-lg";
+        } else if (tab === 'python') {
+            document.getElementById('tab-content-python').classList.remove('hidden');
+            document.getElementById('tab-btn-python').className = "px-3 py-2 bg-amber-500 text-slate-950 font-bold rounded-t-lg";
+        } else if (tab === 'github') {
+            document.getElementById('tab-content-github').classList.remove('hidden');
+            document.getElementById('tab-btn-github').className = "px-3 py-2 bg-amber-500 text-slate-950 font-bold rounded-t-lg";
+        }
+    }
+
+    function copyToClipboard(elementId, btnId) {
+        const textToCopy = document.getElementById(elementId).innerText;
+        const tempInput = document.createElement("textarea");
+        tempInput.value = textToCopy; document.body.appendChild(tempInput); tempInput.select();
+        try {
+            document.execCommand('copy');
+            const btn = document.getElementById(btnId); const origText = btn.innerText;
+            btn.innerText = "✅ COPIED!"; btn.classList.add('bg-emerald-600');
+            setTimeout(() => { btn.innerText = origText; btn.classList.remove('bg-emerald-600'); }, 1500);
+        } catch (err) {} finally { document.body.removeChild(tempInput); }
+    }
 
     /* ==========================================================================
        5. AR WEBCAM JUMP & RUN DETECTION ENGINE
        ========================================================================== */
     let arActive = false;
-    let poseDetector = null, cameraUtil = null, cameraStream = null;
-    let prevShoulderY = null, jumpCooldown = false;
-    
-    // Run Detection Variables
-    let isUserRunningAR = false; 
-    let runningMotionAvg = 0;
+    let cameraStream = null;
+    let poseDetector = null;
+    let cameraUtil = null;
+
+    let prevShoulderY = null;
     let prevFrameData = null;
+    let jumpCooldown = false;
+    const JUMP_THRESHOLD_Y = 0.025;
+    const MOTION_THRESHOLD = 18;
+    
+    // Auto-Run Variables
+    let isUserRunningAR = false;
+    let runningMotionAvg = 0;
 
     function toggleDebugPanel() {
         const panel = document.getElementById('ar-debug-panel');
@@ -847,8 +1458,7 @@
                 document.getElementById('ar-debug-panel').classList.remove('hidden');
             }
         } else {
-            if (cameraUtil) { cameraUtil.stop(); cameraUtil = null; }
-            if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+            stopARCamera();
             arActive = false;
             arBtn.classList.remove('bg-emerald-600', 'led-pulse'); arBtn.classList.add('bg-amber-600');
             arBtn.innerText = "📷 AR WEBCAM (JUMP/RUN)";
@@ -860,38 +1470,62 @@
         const statusText = document.getElementById('ar-status-text');
         statusText.textContent = "STARTING CAMERA...";
         const videoElement = document.getElementById('ar-video');
+
         try {
             if (typeof Pose !== "undefined") {
                 poseDetector = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
                 poseDetector.setOptions({ modelComplexity: 0, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
                 poseDetector.onResults(onPoseResults);
-                cameraUtil = new Camera(videoElement, { onFrame: async () => { await poseDetector.send({ image: videoElement }); processFrameMotion(videoElement); }, width: 320, height: 240 });
+
+                cameraUtil = new Camera(videoElement, {
+                    onFrame: async () => { await poseDetector.send({ image: videoElement }); processFrameMotion(videoElement); },
+                    width: 320, height: 240
+                });
                 await cameraUtil.start();
                 statusText.textContent = "ACTIVE & TRACKING"; statusText.className = "text-emerald-400 font-bold";
                 return true;
             } else {
                 cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
                 videoElement.srcObject = cameraStream; await videoElement.play();
-                function processLoop() { if (arActive) { processFrameMotion(videoElement); requestAnimationFrame(processLoop); } }
+
+                function processLoop() {
+                    if (arActive) { processFrameMotion(videoElement); requestAnimationFrame(processLoop); }
+                }
                 processLoop();
+
                 statusText.textContent = "OPTICAL MOTION MODE"; statusText.className = "text-yellow-400 font-bold";
                 return true;
             }
-        } catch (err) { return false; }
+        } catch (err) {
+            statusText.textContent = "CAMERA ERROR!"; statusText.className = "text-red-500 font-bold";
+            logSerialMessage("AR Camera Error: " + err.message, "error");
+            return false;
+        }
+    }
+
+    function stopARCamera() {
+        if (cameraUtil) { cameraUtil.stop(); cameraUtil = null; }
+        if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); cameraStream = null; }
+        document.getElementById('ar-status-text').textContent = "STOPPED";
+        document.getElementById('ar-status-text').className = "text-slate-400 font-bold";
     }
 
     function onPoseResults(results) {
         const debugCanvas = document.getElementById('ar-debug-canvas');
         const debugCtx = debugCanvas.getContext('2d');
         debugCanvas.width = 320; debugCanvas.height = 240;
-        debugCtx.save(); debugCtx.clearRect(0, 0, debugCanvas.width, debugCanvas.height);
+
+        debugCtx.save();
+        debugCtx.clearRect(0, 0, debugCanvas.width, debugCanvas.height);
         debugCtx.drawImage(results.image, 0, 0, debugCanvas.width, debugCanvas.height);
 
         if (results.poseLandmarks) {
             const leftShoulder = results.poseLandmarks[11];
             const rightShoulder = results.poseLandmarks[12];
+
             if (leftShoulder && rightShoulder) {
                 const currentShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
+
                 debugCtx.strokeStyle = "#38bdf8"; debugCtx.lineWidth = 4; debugCtx.beginPath();
                 debugCtx.moveTo(leftShoulder.x * debugCanvas.width, leftShoulder.y * debugCanvas.height);
                 debugCtx.lineTo(rightShoulder.x * debugCanvas.width, rightShoulder.y * debugCanvas.height); debugCtx.stroke();
@@ -899,9 +1533,8 @@
                 if (prevShoulderY !== null) {
                     const deltaY = prevShoulderY - currentShoulderY;
                     document.getElementById('ar-delta-y').textContent = deltaY.toFixed(4);
-                    if (deltaY > 0.025 && !jumpCooldown) {
-                        triggerARJump("POSE");
-                    }
+
+                    if (deltaY > JUMP_THRESHOLD_Y && !jumpCooldown) triggerARJump("POSE_UPWARD_MOTION");
                 }
                 prevShoulderY = currentShoulderY;
             }
@@ -918,6 +1551,7 @@
         try {
             const frame = debugCtx.getImageData(0, 0, debugCanvas.width, debugCanvas.height);
             const data = frame.data;
+
             if (prevFrameData) {
                 let motionSum = 0; const step = 16;
                 for (let i = 0; i < data.length; i += 4 * step) {
@@ -927,18 +1561,21 @@
                 const motionIntensity = motionSum / (data.length / (4 * step));
                 document.getElementById('ar-motion-level').textContent = motionIntensity.toFixed(2);
 
-                // Run detection logic smoothing
+                // Run detection check
                 runningMotionAvg = (runningMotionAvg * 0.85) + (motionIntensity * 0.15);
-                isUserRunningAR = runningMotionAvg > 10; // Threshold for running physically
+                isUserRunningAR = runningMotionAvg > 8; // Adjust detection threshold
+                document.getElementById('ar-run-state').textContent = isUserRunningAR ? "RUNNING" : "IDLE";
+                document.getElementById('ar-run-state').className = isUserRunningAR ? "text-emerald-400 font-bold" : "text-slate-400 font-bold";
 
-                if (motionIntensity > 18 && !jumpCooldown) triggerARJump("MOTION");
+                if (motionIntensity > MOTION_THRESHOLD && !jumpCooldown) triggerARJump("OPTICAL_MOTION_SPIKE");
             }
             prevFrameData = data;
         } catch (e) { }
     }
 
-    function triggerARJump() {
-        jumpCooldown = true; triggerJump();
+    function triggerARJump(reason) {
+        jumpCooldown = true;
+        triggerJump("AR_WEBCAM [" + reason + "]");
         const indicator = document.getElementById('ar-jump-indicator');
         indicator.classList.remove('opacity-0'); indicator.classList.add('opacity-100');
         setTimeout(() => { indicator.classList.remove('opacity-100'); indicator.classList.add('opacity-0'); }, 300);
@@ -946,7 +1583,6 @@
     }
 
     window.onload = function() {
-        updateRPGUI();
         initParallax();
         drawBackground();
         mario.draw();
