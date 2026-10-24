@@ -108,10 +108,11 @@
             </button>
             <!-- Dropdown List -->
             <div id="difficulty-list" class="hidden absolute top-full mt-3 left-0 w-44 bg-slate-900 border-2 border-orange-500 rounded-xl shadow-[0_10px_25px_rgba(0,0,0,0.8)] z-50 flex flex-col overflow-hidden text-[9px] sm:text-[10px]">
-                <button onclick="setDifficulty(0.5, 'EASY')" class="hover:bg-slate-700 px-3 py-3 text-left text-emerald-400 font-bold border-b border-slate-700 transition-colors cursor-pointer">🟢 EASY (0.5x)</button>
-                <button onclick="setDifficulty(1.0, 'NORMAL')" class="hover:bg-slate-700 px-3 py-3 text-left text-yellow-400 font-bold border-b border-slate-700 transition-colors cursor-pointer">🟡 NORMAL (1.0x)</button>
-                <button onclick="setDifficulty(1.5, 'HARD')" class="hover:bg-slate-700 px-3 py-3 text-left text-red-400 font-bold border-b border-slate-700 transition-colors cursor-pointer">🔴 HARD (1.5x)</button>
-                <button onclick="setDifficulty(2.0, 'ULTIMATE')" class="hover:bg-slate-700 px-3 py-3 text-left text-purple-400 font-bold transition-colors cursor-pointer">😈 ULTIMATE (2.0x)</button>
+                <button onclick="setDifficulty(0.5, 'SUPA EASY')" class="hover:bg-slate-700 px-3 py-3 text-left text-cyan-400 font-bold border-b border-slate-700 transition-colors cursor-pointer">🔵 SUPA EASY (0.5x)</button>
+                <button onclick="setDifficulty(1.0, 'EASY')" class="hover:bg-slate-700 px-3 py-3 text-left text-emerald-400 font-bold border-b border-slate-700 transition-colors cursor-pointer">🟢 EASY (1.0x)</button>
+                <button onclick="setDifficulty(1.5, 'NORMAL')" class="hover:bg-slate-700 px-3 py-3 text-left text-yellow-400 font-bold border-b border-slate-700 transition-colors cursor-pointer">🟡 NORMAL (1.5x)</button>
+                <button onclick="setDifficulty(2.0, 'HARD')" class="hover:bg-slate-700 px-3 py-3 text-left text-red-400 font-bold border-b border-slate-700 transition-colors cursor-pointer">🔴 HARD (2.0x)</button>
+                <button onclick="setDifficulty(2.5, 'ULTIMATE')" class="hover:bg-slate-700 px-3 py-3 text-left text-purple-400 font-bold transition-colors cursor-pointer">😈 ULTIMATE (2.5x)</button>
             </div>
         </div>
 
@@ -163,7 +164,7 @@
             <div class="flex gap-3 sm:gap-6">
                 <span>FPS: <span id="ui-fps" class="text-emerald-400">60</span></span>
                 <span>BEST: <span id="ui-highscore" class="text-emerald-400">000000</span></span>
-                <span>SPEED: <span id="ui-speed" class="text-cyan-400">1.0x</span></span>
+                <span>SPEED: <span id="ui-speed" class="text-cyan-400">1.5x</span></span>
             </div>
         </div>
 
@@ -393,7 +394,7 @@ sleep(20)</pre>
     /* ==========================================================================
        0. GAME DIFFICULTY SETTINGS
        ========================================================================== */
-    let difficultyMultiplier = 1.0;
+    let difficultyMultiplier = 1.5; // Normal defaults to 1.5x now
 
     function toggleDifficultyList() {
         if (gameState === 'PLAYING') return; // Double protection
