@@ -16,6 +16,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- PeerJS for Real-Time P2P Multiplayer Serverless Connection -->
+    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
 
 <style>
     * {
@@ -473,7 +475,7 @@
 
         <div id="mp-content" class="hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div class="bg-black/80 border-2 border-slate-700 rounded-xl p-4 text-center hover:border-orange-500 transition-colors cursor-pointer group">
+                <div class="bg-black/80 border-2 border-slate-700 rounded-xl p-4 text-center hover:border-orange-500 transition-colors cursor-pointer group" onclick="createLobby()">
                     <h4 class="text-yellow-400 font-bold mb-2 group-hover:scale-110 transition-transform">HOST PRIVATE GAME</h4>
                     <p class="text-[9px] text-slate-400 mb-3">Create a room and invite friends using a 4-digit code.</p>
                     <button class="bg-orange-600 text-white font-bold w-full py-2 rounded-lg text-[10px]">CREATE LOBBY</button>
@@ -483,14 +485,14 @@
                     <p class="text-[9px] text-slate-400 mb-3">Enter a friend's room code to compete.</p>
                     <div class="flex gap-2">
                         <input type="text" placeholder="CODE" maxlength="4" class="w-16 bg-slate-950 border border-slate-700 rounded text-center text-white font-bold text-[10px] uppercase">
-                        <button class="bg-emerald-600 text-white font-bold flex-1 py-2 rounded-lg text-[10px]">JOIN</button>
+                        <button onclick="joinGame()" class="bg-emerald-600 text-white font-bold flex-1 py-2 rounded-lg text-[10px]">JOIN</button>
                     </div>
                 </div>
             </div>
             
             <div class="border-t border-slate-800 pt-4">
                 <h4 class="text-[10px] text-slate-300 font-bold mb-3">🌐 GLOBAL MATCHMAKING</h4>
-                <button class="w-full btn-retro bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl text-[10px] flex items-center justify-center gap-2">
+                <button onclick="findRandomOpponent()" class="w-full btn-retro bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl text-[10px] flex items-center justify-center gap-2">
                     <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
                     FIND RANDOM OPPONENT
                 </button>
@@ -1592,6 +1594,18 @@ while True:
         document.getElementById('ui-coins').textContent = `🪙 ${sessionCoins}`;
 
         mario.update(dt);
+        
+        // 🔹 MULTIPLAYER SYNC 🔹
+        if (oppState.active && mpConn && mpConn.open) {
+            mpConn.send({
+                type: 'sync',
+                x: mario.x, y: mario.y, scale: mario.scale,
+                isJumping: mario.isJumping, isCrouching: mario.isCrouching,
+                runFrame: mario.runFrame, score: score, name: cloudAuth.userName || "PLAYER"
+            });
+            const oppScoreEl = document.getElementById('opp-score');
+            if (oppScoreEl) oppScoreEl.textContent = String(Math.floor(oppState.score)).padStart(6, '0');
+        }
 
         if (runFactor > 0.1) {
             spawnTimer += dt;
@@ -1650,7 +1664,11 @@ while True:
                 if (checkCollision(mario, obs, actualSpeed)) {
                     if (mario.vy > 0 && (mario.y + mario.height - mario.vy) <= obs.y + 12) {
                         obs.squished = true; mario.stompBounce(); score += 100; addScorePopup("+100", obs.x, obs.y, "#22c55e");
-                    } else if (mario.hit()) { gameOver(); return; }
+                    } else if (mario.hit()) { 
+                        if (oppState.active && mpConn) mpConn.send({ type: 'gameover', name: cloudAuth.userName });
+                        gameOver(); 
+                        return; 
+                    }
                 }
             } else if (obs.type === 'pipe') {
                 ctx.fillStyle = '#000000'; 
@@ -1670,7 +1688,13 @@ while True:
                 ctx.fillRect(obs.x + obs.width - 6, obs.y + 18, 4, obs.height - 18);
 
                 // BUG FIX: Included actualSpeed in the collision test to prevent tunneling here too
-                if (checkCollision(mario, obs, actualSpeed)) { if(mario.hit()) { gameOver(); return; } }
+                if (checkCollision(mario, obs, actualSpeed)) { 
+                    if(mario.hit()) { 
+                        if (oppState.active && mpConn) mpConn.send({ type: 'gameover', name: cloudAuth.userName });
+                        gameOver(); 
+                        return; 
+                    } 
+                }
             }
             if (obs.x + obs.width < -50) obstacles.splice(i, 1);
         }
@@ -1723,13 +1747,32 @@ while True:
                 r1.y + r1.height - padding > r2.y);
     }
 
+    // 🔹 MULTIPLAYER SPAWN LOGIC 🔹
     function spawnObstacle() {
-        if (Math.random() < 0.6) obstacles.push({ type: 'goomba', x: CANVAS_WIDTH + 20, y: GROUND_Y - 34, width: 36, height: 34, squished: false, squishTimer: 0 });
-        else obstacles.push({ type: 'pipe', x: CANVAS_WIDTH + 20, y: GROUND_Y - (45 + Math.floor(Math.random()*30)), width: 44, height: 75 });
+        if(oppState.active && !mpIsHost) return; // Client waits for host spawn to stay in sync
+        
+        let isGoomba = Math.random() < 0.6;
+        let obs;
+        if (isGoomba) {
+            obs = { type: 'goomba', x: CANVAS_WIDTH + 20, y: GROUND_Y - 34, width: 36, height: 34, squished: false, squishTimer: 0 };
+            obstacles.push(obs);
+            if(oppState.active && mpIsHost) mpConn.send({type: 'spawn', obj: 'goomba', x: obs.x});
+        } else {
+            let h = 45 + Math.floor(Math.random()*30);
+            obs = { type: 'pipe', x: CANVAS_WIDTH + 20, y: GROUND_Y - h, width: 44, height: 75 };
+            obstacles.push(obs);
+            if(oppState.active && mpIsHost) mpConn.send({type: 'spawn', obj: 'pipe', x: obs.x, y: obs.y, h: obs.height});
+        }
     }
     function spawnCollectibles() {
+        if(oppState.active && !mpIsHost) return; // Client waits for host
+        
         const startY = GROUND_Y - 60 - Math.random() * 80;
-        for (let i = 0; i < 3; i++) coinsList.push({ x: CANVAS_WIDTH + (i * 32), y: startY, width: 20, height: 24, anim: i * 2 });
+        for (let i = 0; i < 3; i++) {
+            let c = { x: CANVAS_WIDTH + (i * 32), y: startY, width: 20, height: 24, anim: i * 2 };
+            coinsList.push(c);
+            if(oppState.active && mpIsHost) mpConn.send({type: 'spawnCoin', x: c.x, y: c.y, anim: c.anim});
+        }
     }
     
     function createDustParticles(x, y) { for(let i=0; i<6; i++) particles.push({x:x, y:y, vx:(Math.random()-0.5)*4, vy:-Math.random()*3, size:3+Math.random()*3, life:1.0, color:'#e2e8f0'}); }
@@ -1742,6 +1785,46 @@ while True:
             if (p.life <= 0) { particles.splice(i, 1); continue; }
             ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.fillRect(p.x, p.y, p.size, p.size); ctx.globalAlpha = 1.0;
         }
+    }
+
+    // 🔹 MULTIPLAYER GHOST RENDERING 🔹
+    function drawOpponent() {
+        if (!oppState.active) return;
+        ctx.save(); ctx.translate(oppState.x, oppState.y); ctx.scale(oppState.scale, oppState.scale);
+        ctx.globalAlpha = 0.5; // Make opponent a transparent ghost!
+
+        const r = '#E52521'; const b = '#0022F2'; const s = '#FCC082'; const br = '#6B3E08';
+        if (oppState.isCrouching && !oppState.isJumping) {
+            ctx.fillStyle = r; ctx.fillRect(4, 0, 28, 8); 
+            ctx.fillStyle = s; ctx.fillRect(6, 8, 22, 8); 
+            ctx.fillStyle = b; ctx.fillRect(4, 16, 26, 10); 
+            ctx.fillStyle = br; ctx.fillRect(2, 22, 30, 8); 
+        } else if (oppState.isJumping) {
+            ctx.fillStyle = r; ctx.fillRect(6, 0, 24, 10); ctx.fillRect(10, -4, 16, 6);
+            ctx.fillStyle = s; ctx.fillRect(8, 10, 20, 12);
+            ctx.fillStyle = '#000'; ctx.fillRect(22, 12, 4, 6); ctx.fillRect(24, 16, 8, 6);
+            ctx.fillStyle = b; ctx.fillRect(6, 22, 22, 18);
+            ctx.fillStyle = r; ctx.fillRect(24, 14, 10, 8); 
+            ctx.fillStyle = br; ctx.fillRect(2, 40, 14, 10); ctx.fillRect(20, 36, 14, 10);
+        } else {
+            ctx.fillStyle = r; ctx.fillRect(6, 2, 24, 10); ctx.fillRect(12, 0, 16, 4);
+            ctx.fillStyle = s; ctx.fillRect(8, 12, 20, 10);
+            ctx.fillStyle = '#000'; ctx.fillRect(22, 13, 4, 5);
+            ctx.fillStyle = s; ctx.fillRect(24, 16, 8, 6);
+            ctx.fillStyle = br; ctx.fillRect(18, 20, 12, 4);
+            ctx.fillStyle = r; ctx.fillRect(6, 22, 20, 8);
+            ctx.fillStyle = b; ctx.fillRect(8, 28, 18, 12);
+            ctx.fillStyle = br;
+            if (oppState.runFrame === 0) { ctx.fillRect(4, 40, 12, 10); ctx.fillRect(18, 40, 12, 10); } 
+            else if (oppState.runFrame === 1) { ctx.fillRect(0, 38, 14, 12); ctx.fillRect(22, 42, 12, 8); } 
+            else { ctx.fillRect(22, 38, 14, 12); ctx.fillRect(2, 42, 12, 8); }
+        }
+        
+        ctx.globalAlpha = 1.0;
+        ctx.fillStyle = "#38bdf8";
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText(oppState.name, -5, -15);
+        ctx.restore();
     }
 
     function gameLoop(timestamp) {
@@ -1763,6 +1846,7 @@ while True:
         let runFactor = (arEnabled && !shopState.equipped.arAutoRun && playerRunEnergy < 0.1) ? 0.0 : 1.0;
         
         drawBackground(runFactor, dt);
+        drawOpponent(); // Render ghost player
         mario.draw();
         updateGame(dt);
         updateAndDrawParticles(dt);
@@ -1887,7 +1971,6 @@ function addFriend() {
     const input = document.querySelector('#friends-content input');
     const friendId = input.value.trim();
     if (friendId && friendId !== cloudAuth.playerID) {
-        // Mocking user discovery based on ID
         cloudAuth.friends.push({ 
             name: "Runner_" + friendId.substring(0,4), 
             score: Math.floor(Math.random() * 25000), 
@@ -1900,7 +1983,46 @@ function addFriend() {
     }
 }
 
-// 6.3 Multiplayer Matchmaking Logic
+// 6.3 REAL-TIME P2P MULTIPLAYER ENGINE (PEERJS)
+let peer = null;
+let mpConn = null;
+let mpIsHost = false;
+const oppState = { 
+    active: false, x: -100, y: -100, scale: 1, 
+    isJumping: false, isCrouching: false, 
+    runFrame: 0, score: 0, name: "P2" 
+};
+
+function setupMpConn() {
+    oppState.active = true;
+    mpConn.on('data', (data) => {
+        if (data.type === 'sync') {
+            oppState.x = data.x;
+            oppState.y = data.y;
+            oppState.scale = data.scale;
+            oppState.isJumping = data.isJumping;
+            oppState.isCrouching = data.isCrouching;
+            oppState.runFrame = data.runFrame;
+            oppState.score = data.score;
+            oppState.name = data.name;
+        } else if (data.type === 'start') {
+            startMultiplayerMatch('CLIENT_START');
+        } else if (data.type === 'spawn' && !mpIsHost) {
+            // Client receives precise obstacles from host
+            if(data.obj === 'goomba') obstacles.push({ type: 'goomba', x: data.x, y: GROUND_Y - 34, width: 36, height: 34, squished: false, squishTimer: 0 });
+            else if(data.obj === 'pipe') obstacles.push({ type: 'pipe', x: data.x, y: data.y, width: 44, height: data.h });
+        } else if (data.type === 'spawnCoin' && !mpIsHost) {
+            coinsList.push({ x: data.x, y: data.y, width: 20, height: 24, anim: data.anim });
+        } else if (data.type === 'gameover') {
+            showToast(`${data.name} CRASHED! YOU WIN! 🏆`);
+        }
+    });
+    mpConn.on('close', () => {
+        oppState.active = false;
+        showToast("Opponent Disconnected");
+    });
+}
+
 function createLobby() {
     const code = Math.random().toString(36).substring(2, 6).toUpperCase();
     document.getElementById('mp-content').innerHTML = `
@@ -1908,19 +2030,46 @@ function createLobby() {
             <h3 class="text-yellow-400 font-bold mb-4">LOBBY CREATED</h3>
             <p class="text-[10px] text-slate-400 mb-2">Share this room code with a friend:</p>
             <p class="text-white text-3xl font-mono mb-6 bg-slate-900 py-3 rounded border border-slate-700 tracking-widest">${code}</p>
+            <div id="mp-lobby-status" class="text-emerald-400 text-[10px] mb-4 font-bold animate-pulse">WAITING FOR PLAYER...</div>
             <div class="flex justify-center gap-3">
-                <button onclick="startMultiplayerMatch('HOST')" class="bg-orange-600 hover:bg-orange-500 text-white px-6 py-3 rounded-xl font-bold text-[10px]">START MATCH</button>
+                <button id="mp-start-btn" onclick="startMultiplayerMatch('HOST')" class="bg-slate-600 text-slate-400 px-6 py-3 rounded-xl font-bold text-[10px] cursor-not-allowed" disabled>START MATCH</button>
             </div>
         </div>
     `;
+    
+    if (peer) peer.destroy();
+    peer = new Peer('mariorun-web-' + code);
+    
+    peer.on('connection', (conn) => {
+        mpConn = conn;
+        mpIsHost = true;
+        setupMpConn();
+        document.getElementById('mp-lobby-status').textContent = "PLAYER JOINED!";
+        document.getElementById('mp-lobby-status').classList.replace('text-emerald-400', 'text-yellow-400');
+        const startBtn = document.getElementById('mp-start-btn');
+        startBtn.disabled = false;
+        startBtn.classList.replace('bg-slate-600', 'bg-orange-600');
+        startBtn.classList.replace('text-slate-400', 'text-white');
+        startBtn.classList.remove('cursor-not-allowed');
+    });
 }
 
 function joinGame() {
     const codeInput = document.querySelector('#mp-content input');
-    const code = codeInput ? codeInput.value : '';
+    const code = codeInput ? codeInput.value.toUpperCase() : '';
     if (code.length >= 3) {
         showToast("Joining Room " + code + "...");
-        setTimeout(() => startMultiplayerMatch('CLIENT'), 1500);
+        if (peer) peer.destroy();
+        peer = new Peer();
+        
+        peer.on('open', () => {
+            mpConn = peer.connect('mariorun-web-' + code);
+            mpConn.on('open', () => {
+                mpIsHost = false;
+                setupMpConn();
+                showToast("Connected! Waiting for Host to start...");
+            });
+        });
     } else {
         showToast("Invalid Room Code");
     }
@@ -1928,11 +2077,16 @@ function joinGame() {
 
 function findRandomOpponent() {
     showToast("Searching Global Servers...");
-    setTimeout(() => startMultiplayerMatch('RANDOM'), 2500);
+    setTimeout(() => {
+        alert("No random opponents found! Try hosting a private room and sharing the code with a friend.");
+    }, 2500);
 }
 
-let multiplayerSyncInterval = null;
 function startMultiplayerMatch(mode) {
+    if (mode === 'HOST' && mpConn) {
+        mpConn.send({ type: 'start' });
+    }
+    
     closeMultiplayerModal();
     if (gameState !== 'PLAYING') startGame();
     
@@ -1947,35 +2101,7 @@ function startMultiplayerMatch(mode) {
     }
     
     showToast("Match Started!");
-
-    // Simulate opponent progress relative to your score
-    if (multiplayerSyncInterval) clearInterval(multiplayerSyncInterval);
-    multiplayerSyncInterval = setInterval(() => {
-        if (gameState === 'PLAYING') {
-            const oppScoreEl = document.getElementById('opp-score');
-            if (oppScoreEl) {
-                // Opponent score stays competitive (80% to 110% of player score)
-                const variance = 0.8 + (Math.random() * 0.3);
-                oppScoreEl.textContent = String(Math.floor(score * variance)).padStart(6, '0');
-            }
-        }
-    }, 1000);
 }
-
-// 6.4 Event Binding (Attaches to HTML buttons dynamically without modifying HTML)
-setTimeout(() => {
-    // Bind Friends ADD Button
-    const addFriendBtn = document.querySelector('#friends-content button');
-    if (addFriendBtn) addFriendBtn.onclick = addFriend;
-
-    // Bind Multiplayer Buttons
-    const mpButtons = document.querySelectorAll('#mp-content button');
-    if (mpButtons.length >= 3) {
-        mpButtons[0].onclick = createLobby;
-        mpButtons[1].onclick = joinGame;
-        mpButtons[2].onclick = findRandomOpponent;
-    }
-}, 500);
 
 </script>
 </body>
